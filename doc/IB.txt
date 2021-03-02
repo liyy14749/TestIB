@@ -1,0 +1,30 @@
+
+学习资料
+	https://seagochen.blog.csdn.net/article/details/70314787
+	https://seagochen.blog.csdn.net/article/details/98332080
+	https://www.zhihu.com/question/50327561
+
+
+学习视频
+	https://www.youtube.com/watch?v=jmmvX64JKU4
+	https://zhuanlan.zhihu.com/p/34073641
+
+
+
+接口资料
+	https://www.interactivebrokers.com.hk/cn/software/api/api.htm
+	http://interactivebrokers.github.io/tws-api/classIBApi_1_1EClient.html#a8b1f37dfe964369f53d7f2d7ebcf17ca
+
+
+
+错误编码释义: 
+	https://www.interactivebrokers.com/cn/software/api/apiguide/tables/api_message_codes.htm
+	http://interactivebrokers.github.io/tws-api/tick_types.html
+
+资料文档: 
+	https://www.zhihu.com/question/50327561/answer/124848620
+	https://blog.csdn.net/poisonchry/article/details/98964143
+
+
+其他
+	周日晚上，重启测试服务器
