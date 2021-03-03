@@ -2,6 +2,7 @@ package com.stock.core.util;
 
 import java.util.concurrent.TimeUnit;
 
+import com.stock.vo.DepthLineVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
@@ -22,6 +23,21 @@ public class RedisUtil {
 	public void hashPut(String prefix,String symbol,String field,Object value){
 		StringBuilder sb = new StringBuilder().append(prefix).append(":").append(symbol);
 		template.opsForHash().put(sb.toString(),field,String.valueOf(value));
+	}
+
+	public void zsetAdd(String prefix, String symbol,int side, int position, DepthLineVO value){
+		StringBuilder sb = new StringBuilder().append(prefix).append(":").append(symbol).append(":").append(side);
+		template.opsForZSet().add(sb.toString(),JSON.toJSONString(value),position);
+	}
+
+	public void zsetRemove(String prefix,String symbol,int side,int position){
+		StringBuilder sb = new StringBuilder().append(prefix).append(":").append(symbol).append(":").append(side);
+		template.opsForZSet().removeRangeByScore(sb.toString(),position,position);
+	}
+
+	public void zsetUpdate(String prefix,String symbol,int side,int position,DepthLineVO value){
+		zsetRemove(prefix,symbol,side,position);
+		zsetAdd(prefix,symbol,side,position,value);
 	}
 	/**
 	 * 

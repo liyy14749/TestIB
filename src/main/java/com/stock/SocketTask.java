@@ -9,16 +9,15 @@ import com.ib.client.*;
 import com.stock.cache.DataMap;
 import com.stock.contracts.ContractSamples;
 import com.stock.vo.ContractVO;
-import com.stock.vo.MktData;
 import com.stock.vo.TickerVO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SocketTask {
+
+	private static Logger log = LoggerFactory.getLogger(SocketTask.class);
+
     static int tickerId;
-	static List<ContractVO> initContract = new ArrayList<>();
-	static {
-		initContract.add(new ContractVO("EUR","CASH","USD","IDEALPRO"));
-		initContract.add(new ContractVO("AAPL","CASH","USD","IDEALPRO"));
-	}
 
 	public static void start(EWrapperImpl wrapper){
 
@@ -35,7 +34,7 @@ public class SocketTask {
 				try {
 					reader.processMsgs();
 				} catch (Exception e) {
-					System.out.println("Exception: "+e.getMessage());
+					log.error("Exception: ",e);
 				}
 			}
 		}).start();
@@ -44,9 +43,9 @@ public class SocketTask {
 		// In a production application, it would be best to wait for callbacks to confirm the connection is complete
 		try {
 			Thread.sleep(1000);
-			subscribeTickData(wrapper.getClient());
-	//		marketDepthOperationsTest(wrapper.getClient());
-	//		historicalDataRequests(wrapper.getClient());
+//			subscribeTickData(wrapper.getClient());
+			subscribeMarketDepth(wrapper.getClient());
+//			subscribeHistoricalData(wrapper.getClient());
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -61,7 +60,7 @@ public class SocketTask {
 		/*** Requesting real time market data ***/
 		//Thread.sleep(1000);
 		//! [reqmktdata]
-		for(ContractVO vo:initContract){
+		for(ContractVO vo:DataMap.initContract){
 			Contract contract = new Contract();
 			contract.symbol(vo.getSymbol());
 			contract.secType(vo.getSecType());
@@ -87,7 +86,7 @@ public class SocketTask {
 	 * @param client
 	 * @throws InterruptedException
 	 */
-	private static void subscribeHistoricalDataRequests(EClientSocket client) throws InterruptedException {
+	private static void subscribeHistoricalData(EClientSocket client) throws InterruptedException {
 		
 		/*** Requesting historical data ***/
 
@@ -133,11 +132,21 @@ public class SocketTask {
 		/*** Requesting the Deep Book ***/
 
 		//! [reqMktDepthExchanges]
-		client.reqMktDepthExchanges();
+//		client.reqMktDepthExchanges();
 		//! [reqMktDepthExchanges]
-
+		for(ContractVO vo:DataMap.initContract){
+			Contract contract = new Contract();
+			contract.symbol(vo.getSymbol());
+			contract.secType(vo.getSecType());
+			contract.currency(vo.getCurrency());
+			contract.exchange(vo.getExchange());
+			contract.strike(0);
+			contract.includeExpired(false);
+			int tid = ++tickerId;
+			DataMap.tickerCache.put(tid,new TickerVO(tid,vo.getSymbol()));
+			client.reqMktDepth(tid, contract, 5, false, null);
+		}
 		//! [reqmarketdepth]
-		client.reqMktDepth(2001, ContractSamples.EurGbpFx(), 5, false, null);
 
 	}
 }
