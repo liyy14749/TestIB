@@ -1,6 +1,6 @@
-package samples.testbed.cache;
+package com.stock.cache;
 
-import samples.testbed.vo.MktData;
+import com.stock.vo.MktData;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

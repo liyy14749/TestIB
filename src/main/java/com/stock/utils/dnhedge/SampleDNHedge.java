@@ -1,7 +1,7 @@
 /* Copyright (C) 2019 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
-package samples.dnhedge;
+package com.stock.utils.dnhedge;
 
 
 import com.ib.client.Contract;
@@ -9,7 +9,7 @@ import com.ib.client.ContractDetails;
 import com.ib.contracts.OptContract;
 import com.ib.contracts.StkContract;
 
-import samples.rfq.SimpleWrapper;
+import com.stock.utils.rfq.SimpleWrapper;
 
 
 public class SampleDNHedge extends SimpleWrapper {

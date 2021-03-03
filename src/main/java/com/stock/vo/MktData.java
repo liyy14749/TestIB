@@ -1,4 +1,4 @@
-package samples.testbed.vo;
+package com.stock.vo;
 
 public class MktData {
     private Integer tickerId;

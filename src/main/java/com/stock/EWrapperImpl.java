@@ -1,7 +1,7 @@
 /* Copyright (C) 2019 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
-package samples.testbed;
+package com.stock;
 
 import java.text.DecimalFormat;
 import java.util.List;
@@ -10,8 +10,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import com.ib.client.*;
-import samples.testbed.cache.DataMap;
-import samples.testbed.vo.MktData;
+import com.stock.vo.MktData;
+import com.stock.cache.DataMap;
 
 //! [ewrapperimpl]
 public class EWrapperImpl implements EWrapper {
