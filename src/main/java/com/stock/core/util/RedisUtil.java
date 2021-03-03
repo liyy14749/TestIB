@@ -18,6 +18,11 @@ public class RedisUtil {
 
 	@Autowired
 	private RedisTemplate<String, String> template;
+
+	public void hashPut(String prefix,String symbol,String field,Object value){
+		StringBuilder sb = new StringBuilder().append(prefix).append(":").append(symbol);
+		template.opsForHash().put(sb.toString(),field,String.valueOf(value));
+	}
 	/**
 	 * 
 	 * @param key

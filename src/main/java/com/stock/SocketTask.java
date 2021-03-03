@@ -8,14 +8,17 @@ import java.util.*;
 import com.ib.client.*;
 import com.stock.cache.DataMap;
 import com.stock.contracts.ContractSamples;
+import com.stock.vo.ContractVO;
 import com.stock.vo.MktData;
+import com.stock.vo.TickerVO;
 
 public class SocketTask {
-
-	/*public static void main(String[] args) throws InterruptedException {
-		EWrapperImpl wrapper = new EWrapperImpl();
-		SocketTask.start(wrapper);
-	}*/
+    static int tickerId;
+	static List<ContractVO> initContract = new ArrayList<>();
+	static {
+		initContract.add(new ContractVO("EUR","CASH","USD","IDEALPRO"));
+		initContract.add(new ContractVO("AAPL","CASH","USD","IDEALPRO"));
+	}
 
 	public static void start(EWrapperImpl wrapper){
 
@@ -41,7 +44,7 @@ public class SocketTask {
 		// In a production application, it would be best to wait for callbacks to confirm the connection is complete
 		try {
 			Thread.sleep(1000);
-			tickDataOperationsTest(wrapper.getClient());
+			subscribeTickData(wrapper.getClient());
 	//		marketDepthOperationsTest(wrapper.getClient());
 	//		historicalDataRequests(wrapper.getClient());
 		} catch (InterruptedException e) {
@@ -49,27 +52,27 @@ public class SocketTask {
 		}
 	}
 	/**
-	 * 市场数据
+	 * 订阅市场数据
 	 *
 	 * @param client
 	 * @throws InterruptedException
 	 */
-	private static void tickDataOperationsTest(EClientSocket client) throws InterruptedException {
-
-		Contract contract = new Contract();
-		contract.symbol("EUR");
-		contract.secType("CASH");
-		contract.currency("USD");
-		contract.exchange("IDEALPRO");
-		contract.strike(0);
-		contract.includeExpired(false);
-
+	private static void subscribeTickData(EClientSocket client) throws InterruptedException {
 		/*** Requesting real time market data ***/
 		//Thread.sleep(1000);
 		//! [reqmktdata]
-		int tickerId = 1001;
-		DataMap.cache.put(tickerId,new MktData(tickerId));
-		client.reqMktData(tickerId, contract, "", false, false, null);
+		for(ContractVO vo:initContract){
+			Contract contract = new Contract();
+			contract.symbol(vo.getSymbol());
+			contract.secType(vo.getSecType());
+			contract.currency(vo.getCurrency());
+			contract.exchange(vo.getExchange());
+			contract.strike(0);
+			contract.includeExpired(false);
+			int tid = ++tickerId;
+			DataMap.tickerCache.put(tid,new TickerVO(tid,vo.getSymbol()));
+			client.reqMktData(tid, contract, "", false, false, null);
+		}
 		//! [reqmktdata]
 
 		//! [reqsmartcomponents]
@@ -79,12 +82,12 @@ public class SocketTask {
 	}
 
 	/**
-	 * 历史数据
+	 * 订阅历史数据
 	 *
 	 * @param client
 	 * @throws InterruptedException
 	 */
-	private static void historicalDataRequests(EClientSocket client) throws InterruptedException {
+	private static void subscribeHistoricalDataRequests(EClientSocket client) throws InterruptedException {
 		
 		/*** Requesting historical data ***/
 
@@ -120,12 +123,12 @@ public class SocketTask {
 	}
 
 	/**
-	 * 市场深度
+	 * 订阅市场深度
 	 *
 	 * @param client
 	 * @throws InterruptedException
 	 */
-	private static void marketDepthOperationsTest(EClientSocket client) throws InterruptedException {
+	private static void subscribeMarketDepth(EClientSocket client) throws InterruptedException {
 
 		/*** Requesting the Deep Book ***/
 

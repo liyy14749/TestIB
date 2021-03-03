@@ -10,12 +10,21 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import com.ib.client.*;
+import com.stock.core.util.RedisUtil;
 import com.stock.vo.MktData;
 import com.stock.cache.DataMap;
+import com.stock.vo.TickerVO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class EWrapperImpl implements EWrapper {
+
+	private Logger log = LoggerFactory.getLogger(EWrapperImpl.class);
+
+	@Autowired RedisUtil redisUtil;
 
 	private EReaderSignal readerSignal;
 	private EClientSocket clientSocket;
@@ -43,16 +52,15 @@ public class EWrapperImpl implements EWrapper {
 	public void tickPrice(int tickerId, int field, double price, TickAttrib attribs) {
 		System.out.println("Tick Price. Ticker Id:"+tickerId+", Field: "+field+", Price: "+price+", CanAutoExecute: "+ attribs.canAutoExecute()
 		+ ", pastLimit: " + attribs.pastLimit() + ", pre-open: " + attribs.preOpen());
-		MktData mkt = DataMap.cache.get(tickerId);
-		if(mkt ==null){
+		TickerVO ticker = DataMap.tickerCache.get(tickerId);
+		if(ticker ==null){
 			return;
 		}
 		if(field == 1){
-			mkt.setBidPrice(price);
+			redisUtil.hashPut("market",ticker.getSymbol(),"b",price);
 		} else if(field == 2){
-			mkt.setAskPrice(price);
+			redisUtil.hashPut("market",ticker.getSymbol(),"a",price);
 		}
-		System.out.println(mkt);
 	}
 	//! [tickprice]
 	
@@ -60,16 +68,16 @@ public class EWrapperImpl implements EWrapper {
 	@Override
 	public void tickSize(int tickerId, int field, int size) {
 		System.out.println("Tick Size. Ticker Id:" + tickerId + ", Field: " + field + ", Size: " + size);
-		MktData mkt = DataMap.cache.get(tickerId);
-		if(mkt ==null){
+		TickerVO ticker = DataMap.tickerCache.get(tickerId);
+		if(ticker ==null){
 			return;
 		}
 		if(field == 0){
-			mkt.setBidSize(size);
+			redisUtil.hashPut("market",ticker.getSymbol(),"bidSize",size);
 		} else if(field == 3){
-			mkt.setAskSize(size);
+			redisUtil.hashPut("market",ticker.getSymbol(),"askSize",size);
 		}
-		System.out.println(mkt);
+//		System.out.println(ticker);
 	}
 	//! [ticksize]
 	
@@ -79,22 +87,22 @@ public class EWrapperImpl implements EWrapper {
 			double impliedVol, double delta, double optPrice,
 			double pvDividend, double gamma, double vega, double theta,
 			double undPrice) {
-		System.out.println("TickOptionComputation. TickerId: "+tickerId+", field: "+field+", ImpliedVolatility: "+impliedVol+", Delta: "+delta
-                +", OptionPrice: "+optPrice+", pvDividend: "+pvDividend+", Gamma: "+gamma+", Vega: "+vega+", Theta: "+theta+", UnderlyingPrice: "+undPrice);
+//		System.out.println("TickOptionComputation. TickerId: "+tickerId+", field: "+field+", ImpliedVolatility: "+impliedVol+", Delta: "+delta
+//                +", OptionPrice: "+optPrice+", pvDividend: "+pvDividend+", Gamma: "+gamma+", Vega: "+vega+", Theta: "+theta+", UnderlyingPrice: "+undPrice);
 	}
 	//! [tickoptioncomputation]
 	
 	//! [tickgeneric]
 	@Override
 	public void tickGeneric(int tickerId, int tickType, double value) {
-		System.out.println("Tick Generic. Ticker Id:" + tickerId + ", Field: " + TickType.getField(tickType) + ", Value: " + value);
+		//System.out.println("Tick Generic. Ticker Id:" + tickerId + ", Field: " + TickType.getField(tickType) + ", Value: " + value);
 	}
 	//! [tickgeneric]
 	
 	//! [tickstring]
 	@Override
 	public void tickString(int tickerId, int tickType, String value) {
-		System.out.println("Tick string. Ticker Id:" + tickerId + ", Type: " + tickType + ", Value: " + value);
+//		System.out.println("Tick string. Ticker Id:" + tickerId + ", Type: " + tickType + ", Value: " + value);
 	}
 	//! [tickstring]
 	@Override
@@ -102,18 +110,18 @@ public class EWrapperImpl implements EWrapper {
 			String formattedBasisPoints, double impliedFuture, int holdDays,
 			String futureLastTradeDate, double dividendImpact,
 			double dividendsToLastTradeDate) {
-		System.out.println("TickEFP. "+tickerId+", Type: "+tickType+", BasisPoints: "+basisPoints+", FormattedBasisPoints: "+
-			formattedBasisPoints+", ImpliedFuture: "+impliedFuture+", HoldDays: "+holdDays+", FutureLastTradeDate: "+futureLastTradeDate+
-			", DividendImpact: "+dividendImpact+", DividendsToLastTradeDate: "+dividendsToLastTradeDate);
+//		System.out.println("TickEFP. "+tickerId+", Type: "+tickType+", BasisPoints: "+basisPoints+", FormattedBasisPoints: "+
+//			formattedBasisPoints+", ImpliedFuture: "+impliedFuture+", HoldDays: "+holdDays+", FutureLastTradeDate: "+futureLastTradeDate+
+//			", DividendImpact: "+dividendImpact+", DividendsToLastTradeDate: "+dividendsToLastTradeDate);
 	}
 	//! [orderstatus]
 	@Override
 	public void orderStatus(int orderId, String status, double filled,
 			double remaining, double avgFillPrice, int permId, int parentId,
 			double lastFillPrice, int clientId, String whyHeld, double mktCapPrice) {
-		System.out.println("OrderStatus. Id: "+orderId+", Status: "+status+", Filled"+filled+", Remaining: "+remaining
-                +", AvgFillPrice: "+avgFillPrice+", PermId: "+permId+", ParentId: "+parentId+", LastFillPrice: "+lastFillPrice+
-                ", ClientId: "+clientId+", WhyHeld: "+whyHeld+", MktCapPrice: "+mktCapPrice);
+//		System.out.println("OrderStatus. Id: "+orderId+", Status: "+status+", Filled"+filled+", Remaining: "+remaining
+//                +", AvgFillPrice: "+avgFillPrice+", PermId: "+permId+", ParentId: "+parentId+", LastFillPrice: "+lastFillPrice+
+//                ", ClientId: "+clientId+", WhyHeld: "+whyHeld+", MktCapPrice: "+mktCapPrice);
 	}
 	//! [orderstatus]
 	
@@ -121,14 +129,14 @@ public class EWrapperImpl implements EWrapper {
 	@Override
 	public void openOrder(int orderId, Contract contract, Order order,
 			OrderState orderState) {
-		System.out.println(EWrapperMsgGenerator.openOrder(orderId, contract, order, orderState));
+//		System.out.println(EWrapperMsgGenerator.openOrder(orderId, contract, order, orderState));
 	}
 	//! [openorder]
 	
 	//! [openorderend]
 	@Override
 	public void openOrderEnd() {
-		System.out.println("OpenOrderEnd");
+//		System.out.println("OpenOrderEnd");
 	}
 	//! [openorderend]
 	
@@ -136,7 +144,7 @@ public class EWrapperImpl implements EWrapper {
 	@Override
 	public void updateAccountValue(String key, String value, String currency,
 			String accountName) {
-		System.out.println("UpdateAccountValue. Key: " + key + ", Value: " + value + ", Currency: " + currency + ", AccountName: " + accountName);
+//		System.out.println("UpdateAccountValue. Key: " + key + ", Value: " + value + ", Currency: " + currency + ", AccountName: " + accountName);
 	}
 	//! [updateaccountvalue]
 	
@@ -145,63 +153,63 @@ public class EWrapperImpl implements EWrapper {
 	public void updatePortfolio(Contract contract, double position,
 			double marketPrice, double marketValue, double averageCost,
 			double unrealizedPNL, double realizedPNL, String accountName) {
-		System.out.println("UpdatePortfolio. "+contract.symbol()+", "+contract.secType()+" @ "+contract.exchange()
-                +": Position: "+position+", MarketPrice: "+marketPrice+", MarketValue: "+marketValue+", AverageCost: "+averageCost
-                +", UnrealizedPNL: "+unrealizedPNL+", RealizedPNL: "+realizedPNL+", AccountName: "+accountName);
+//		System.out.println("UpdatePortfolio. "+contract.symbol()+", "+contract.secType()+" @ "+contract.exchange()
+//                +": Position: "+position+", MarketPrice: "+marketPrice+", MarketValue: "+marketValue+", AverageCost: "+averageCost
+//                +", UnrealizedPNL: "+unrealizedPNL+", RealizedPNL: "+realizedPNL+", AccountName: "+accountName);
 	}
 	//! [updateportfolio]
 	
 	//! [updateaccounttime]
 	@Override
 	public void updateAccountTime(String timeStamp) {
-		System.out.println("UpdateAccountTime. Time: " + timeStamp+"\n");
+//		System.out.println("UpdateAccountTime. Time: " + timeStamp+"\n");
 	}
 	//! [updateaccounttime]
 	
 	//! [accountdownloadend]
 	@Override
 	public void accountDownloadEnd(String accountName) {
-		System.out.println("Account download finished: "+accountName+"\n");
+//		System.out.println("Account download finished: "+accountName+"\n");
 	}
 	//! [accountdownloadend]
 	
 	//! [nextvalidid]
 	@Override
 	public void nextValidId(int orderId) {
-		System.out.println("Next Valid Id: ["+orderId+"]");
-		currentOrderId = orderId;
+//		System.out.println("Next Valid Id: ["+orderId+"]");
+//		currentOrderId = orderId;
 	}
 	//! [nextvalidid]
 	
 	//! [contractdetails]
 	@Override
 	public void contractDetails(int reqId, ContractDetails contractDetails) {
-		System.out.println(EWrapperMsgGenerator.contractDetails(reqId, contractDetails)); 
+//		System.out.println(EWrapperMsgGenerator.contractDetails(reqId, contractDetails));
 	}
 	//! [contractdetails]
 	@Override
 	public void bondContractDetails(int reqId, ContractDetails contractDetails) {
-		System.out.println(EWrapperMsgGenerator.bondContractDetails(reqId, contractDetails)); 
+//		System.out.println(EWrapperMsgGenerator.bondContractDetails(reqId, contractDetails));
 	}
 	//! [contractdetailsend]
 	@Override
 	public void contractDetailsEnd(int reqId) {
-		System.out.println("ContractDetailsEnd. "+reqId+"\n");
+//		System.out.println("ContractDetailsEnd. "+reqId+"\n");
 	}
 	//! [contractdetailsend]
 	
 	//! [execdetails]
 	@Override
 	public void execDetails(int reqId, Contract contract, Execution execution) {
-		System.out.println("ExecDetails. "+reqId+" - ["+contract.symbol()+"], ["+contract.secType()+"], ["+contract.currency()+"], ["+execution.execId()+
-		        "], ["+execution.orderId()+"], ["+execution.shares()+"]"  + ", [" + execution.lastLiquidity() + "]");
+//		System.out.println("ExecDetails. "+reqId+" - ["+contract.symbol()+"], ["+contract.secType()+"], ["+contract.currency()+"], ["+execution.execId()+
+//		        "], ["+execution.orderId()+"], ["+execution.shares()+"]"  + ", [" + execution.lastLiquidity() + "]");
 	}
 	//! [execdetails]
 	
 	//! [execdetailsend]
 	@Override
 	public void execDetailsEnd(int reqId) {
-		System.out.println("ExecDetailsEnd. "+reqId+"\n");
+//		System.out.println("ExecDetailsEnd. "+reqId+"\n");
 	}
 	//! [execdetailsend]
 	
@@ -209,7 +217,7 @@ public class EWrapperImpl implements EWrapper {
 	@Override
 	public void updateMktDepth(int tickerId, int position, int operation,
 			int side, double price, int size) {
-		System.out.println("UpdateMarketDepth. "+tickerId+" - Position: "+position+", Operation: "+operation+", Side: "+side+", Price: "+price+", Size: "+size+"");
+//		System.out.println("UpdateMarketDepth. "+tickerId+" - Position: "+position+", Operation: "+operation+", Side: "+side+", Price: "+price+", Size: "+size+"");
 	}
 	//! [updatemktdepth]
 	
@@ -217,7 +225,7 @@ public class EWrapperImpl implements EWrapper {
 	@Override
 	public void updateMktDepthL2(int tickerId, int position,
 			String marketMaker, int operation, int side, double price, int size, boolean isSmartDepth) {
-		System.out.println("UpdateMarketDepthL2. "+tickerId+" - Position: "+position+", Operation: "+operation+", Side: "+side+", Price: "+price+", Size: "+size+", isSmartDepth: "+isSmartDepth);
+//		System.out.println("UpdateMarketDepthL2. "+tickerId+" - Position: "+position+", Operation: "+operation+", Side: "+side+", Price: "+price+", Size: "+size+", isSmartDepth: "+isSmartDepth);
 	}
 	//! [updatemktdepthl2]
 	
@@ -225,35 +233,35 @@ public class EWrapperImpl implements EWrapper {
 	@Override
 	public void updateNewsBulletin(int msgId, int msgType, String message,
 			String origExchange) {
-		System.out.println("News Bulletins. "+msgId+" - Type: "+msgType+", Message: "+message+", Exchange of Origin: "+origExchange+"\n");
+//		System.out.println("News Bulletins. "+msgId+" - Type: "+msgType+", Message: "+message+", Exchange of Origin: "+origExchange+"\n");
 	}
 	//! [updatenewsbulletin]
 	
 	//! [managedaccounts]
 	@Override
 	public void managedAccounts(String accountsList) {
-		System.out.println("Account list: " +accountsList);
+//		System.out.println("Account list: " +accountsList);
 	}
 	//! [managedaccounts]
 
 	//! [receivefa]
 	@Override
 	public void receiveFA(int faDataType, String xml) {
-		System.out.println("Receiving FA: "+faDataType+" - "+xml);
+//		System.out.println("Receiving FA: "+faDataType+" - "+xml);
 	}
 	//! [receivefa]
 	
 	//! [historicaldata]
 	@Override
 	public void historicalData(int reqId, Bar bar) {
-		System.out.println("HistoricalData. "+reqId+" - Date: "+bar.time()+", Open: "+bar.open()+", High: "+bar.high()+", Low: "+bar.low()+", Close: "+bar.close()+", Volume: "+bar.volume()+", Count: "+bar.count()+", WAP: "+bar.wap());
+//		System.out.println("HistoricalData. "+reqId+" - Date: "+bar.time()+", Open: "+bar.open()+", High: "+bar.high()+", Low: "+bar.low()+", Close: "+bar.close()+", Volume: "+bar.volume()+", Count: "+bar.count()+", WAP: "+bar.wap());
 	}
 	//! [historicaldata]
 	
 	//! [historicaldataend]
 	@Override
 	public void historicalDataEnd(int reqId, String startDateStr, String endDateStr) {
-		System.out.println("HistoricalDataEnd. "+reqId+" - Start Date: "+startDateStr+", End Date: "+endDateStr);
+//		System.out.println("HistoricalDataEnd. "+reqId+" - Start Date: "+startDateStr+", End Date: "+endDateStr);
 	}
 	//! [historicaldataend]
 	
@@ -261,7 +269,7 @@ public class EWrapperImpl implements EWrapper {
 	//! [scannerparameters]
 	@Override
 	public void scannerParameters(String xml) {
-		System.out.println("ScannerParameters. "+xml+"\n");
+//		System.out.println("ScannerParameters. "+xml+"\n");
 	}
 	//! [scannerparameters]
 	
@@ -270,15 +278,15 @@ public class EWrapperImpl implements EWrapper {
 	public void scannerData(int reqId, int rank,
 			ContractDetails contractDetails, String distance, String benchmark,
 			String projection, String legsStr) {
-		System.out.println("ScannerData. "+reqId+" - Rank: "+rank+", Symbol: "+contractDetails.contract().symbol()+", SecType: "+contractDetails.contract().secType()+", Currency: "+contractDetails.contract().currency()
-                +", Distance: "+distance+", Benchmark: "+benchmark+", Projection: "+projection+", Legs String: "+legsStr);
+//		System.out.println("ScannerData. "+reqId+" - Rank: "+rank+", Symbol: "+contractDetails.contract().symbol()+", SecType: "+contractDetails.contract().secType()+", Currency: "+contractDetails.contract().currency()
+//                +", Distance: "+distance+", Benchmark: "+benchmark+", Projection: "+projection+", Legs String: "+legsStr);
 	}
 	//! [scannerdata]
 	
 	//! [scannerdataend]
 	@Override
 	public void scannerDataEnd(int reqId) {
-		System.out.println("ScannerDataEnd. "+reqId);
+//		System.out.println("ScannerDataEnd. "+reqId);
 	}
 	//! [scannerdataend]
 	
@@ -286,41 +294,41 @@ public class EWrapperImpl implements EWrapper {
 	@Override
 	public void realtimeBar(int reqId, long time, double open, double high,
 			double low, double close, long volume, double wap, int count) {
-		System.out.println("RealTimeBars. " + reqId + " - Time: " + time + ", Open: " + open + ", High: " + high + ", Low: " + low + ", Close: " + close + ", Volume: " + volume + ", Count: " + count + ", WAP: " + wap);
+//		System.out.println("RealTimeBars. " + reqId + " - Time: " + time + ", Open: " + open + ", High: " + high + ", Low: " + low + ", Close: " + close + ", Volume: " + volume + ", Count: " + count + ", WAP: " + wap);
 	}
 	//! [realtimebar]
 	@Override
 	public void currentTime(long time) {
-		System.out.println("currentTime");
+//		System.out.println("currentTime");
 	}
 	//! [fundamentaldata]
 	@Override
 	public void fundamentalData(int reqId, String data) {
-		System.out.println("FundamentalData. ReqId: ["+reqId+"] - Data: ["+data+"]");
+//		System.out.println("FundamentalData. ReqId: ["+reqId+"] - Data: ["+data+"]");
 	}
 	//! [fundamentaldata]
 	@Override
 	public void deltaNeutralValidation(int reqId, DeltaNeutralContract deltaNeutralContract) {
-		System.out.println("deltaNeutralValidation");
+//		System.out.println("deltaNeutralValidation");
 	}
 	//! [ticksnapshotend]
 	@Override
 	public void tickSnapshotEnd(int reqId) {
-		System.out.println("TickSnapshotEnd: "+reqId);
+//		System.out.println("TickSnapshotEnd: "+reqId);
 	}
 	//! [ticksnapshotend]
 	
 	//! [marketdatatype]
 	@Override
 	public void marketDataType(int reqId, int marketDataType) {
-		System.out.println("MarketDataType. ["+reqId+"], Type: ["+marketDataType+"]\n");
+//		System.out.println("MarketDataType. ["+reqId+"], Type: ["+marketDataType+"]\n");
 	}
 	//! [marketdatatype]
 	
 	//! [commissionreport]
 	@Override
 	public void commissionReport(CommissionReport commissionReport) {
-		System.out.println("CommissionReport. ["+commissionReport.execId()+"] - ["+commissionReport.commission()+"] ["+commissionReport.currency()+"] RPNL ["+commissionReport.realizedPNL()+"]");
+//		System.out.println("CommissionReport. ["+commissionReport.execId()+"] - ["+commissionReport.commission()+"] ["+commissionReport.currency()+"] RPNL ["+commissionReport.realizedPNL()+"]");
 	}
 	//! [commissionreport]
 	
@@ -328,14 +336,14 @@ public class EWrapperImpl implements EWrapper {
 	@Override
 	public void position(String account, Contract contract, double pos,
 			double avgCost) {
-		System.out.println("Position. "+account+" - Symbol: "+contract.symbol()+", SecType: "+contract.secType()+", Currency: "+contract.currency()+", Position: "+pos+", Avg cost: "+avgCost);
+//		System.out.println("Position. "+account+" - Symbol: "+contract.symbol()+", SecType: "+contract.secType()+", Currency: "+contract.currency()+", Position: "+pos+", Avg cost: "+avgCost);
 	}
 	//! [position]
 	
 	//! [positionend]
 	@Override
 	public void positionEnd() {
-		System.out.println("PositionEnd \n");
+//		System.out.println("PositionEnd \n");
 	}
 	//! [positionend]
 	
@@ -343,14 +351,14 @@ public class EWrapperImpl implements EWrapper {
 	@Override
 	public void accountSummary(int reqId, String account, String tag,
 			String value, String currency) {
-		System.out.println("Acct Summary. ReqId: " + reqId + ", Acct: " + account + ", Tag: " + tag + ", Value: " + value + ", Currency: " + currency);
+//		System.out.println("Acct Summary. ReqId: " + reqId + ", Acct: " + account + ", Tag: " + tag + ", Value: " + value + ", Currency: " + currency);
 	}
 	//! [accountsummary]
 	
 	//! [accountsummaryend]
 	@Override
 	public void accountSummaryEnd(int reqId) {
-		System.out.println("AccountSummaryEnd. Req Id: "+reqId+"\n");
+//		System.out.println("AccountSummaryEnd. Req Id: "+reqId+"\n");
 	}
 	//! [accountsummaryend]
 	@Override
@@ -387,7 +395,7 @@ public class EWrapperImpl implements EWrapper {
 	//! [displaygroupupdated]
 	@Override
 	public void error(Exception e) {
-		System.out.println("Exception: "+e.getMessage());
+		log.error("Exception: ", e);
 	}
 
 	@Override
