@@ -12,8 +12,10 @@ import java.util.Set;
 import com.ib.client.*;
 import com.stock.vo.MktData;
 import com.stock.cache.DataMap;
+import org.springframework.stereotype.Service;
 
 //! [ewrapperimpl]
+@Service
 public class EWrapperImpl implements EWrapper {
 	//! [ewrapperimpl]
 	
