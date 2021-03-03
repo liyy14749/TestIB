@@ -15,8 +15,7 @@ public class Application {
     public static void main(String[] args) {
 //        SpringApplication.run(Application.class, args);
         new SpringApplicationBuilder().sources(Application.class).web(WebApplicationType.NONE).run(args);
-        System.out.println(BeanUtil.getBean(EWrapperImpl.class));
-//        SocketTask.start(BeanUtil.getBean(EWrapperImpl.class));
+        SocketTask.start(BeanUtil.getBean(EWrapperImpl.class));
     }
 
 }

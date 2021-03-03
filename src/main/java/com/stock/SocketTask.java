@@ -12,19 +12,16 @@ import com.stock.vo.MktData;
 
 public class SocketTask {
 
-	public static void main(String[] args) throws InterruptedException {
+	/*public static void main(String[] args) throws InterruptedException {
 		EWrapperImpl wrapper = new EWrapperImpl();
 		SocketTask.start(wrapper);
-	}
+	}*/
 
 	public static void start(EWrapperImpl wrapper){
 
 		final EClientSocket m_client = wrapper.getClient();
 		final EReaderSignal m_signal = wrapper.getSignal();
-		//! [connect]
 		m_client.eConnect("127.0.0.1", 7496, 999);
-		//! [connect]
-		//! [ereader]
 		final EReader reader = new EReader(m_client, m_signal);
 
 		reader.start();

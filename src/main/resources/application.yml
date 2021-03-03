@@ -1,4 +1,6 @@
 spring:
+  profiles:
+    active: dev
   messages:
     encoding: UTF-8
   # 模板引擎

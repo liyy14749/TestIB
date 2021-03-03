@@ -14,18 +14,13 @@ import com.stock.vo.MktData;
 import com.stock.cache.DataMap;
 import org.springframework.stereotype.Service;
 
-//! [ewrapperimpl]
 @Service
 public class EWrapperImpl implements EWrapper {
-	//! [ewrapperimpl]
-	
-	//! [socket_declare]
+
 	private EReaderSignal readerSignal;
 	private EClientSocket clientSocket;
 	protected int currentOrderId = -1;
-	//! [socket_declare]
-	
-	//! [socket_init]
+
 	public EWrapperImpl() {
 		readerSignal = new EJavaSignal();
 		clientSocket = new EClientSocket(this, readerSignal);
