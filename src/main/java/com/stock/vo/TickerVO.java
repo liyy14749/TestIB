@@ -1,27 +1,15 @@
 package com.stock.vo;
 
+import lombok.Data;
+
+@Data
 public class TickerVO {
     private int tickerId;
-    private String symbol;
+    private String key;
+    private ContractVO contract;
 
-    public TickerVO(int tickerId, String symbol) {
-        this.tickerId = tickerId;
-        this.symbol = symbol;
-    }
-
-    public int getTickerId() {
-        return tickerId;
-    }
-
-    public void setTickerId(int tickerId) {
-        this.tickerId = tickerId;
-    }
-
-    public String getSymbol() {
-        return symbol;
-    }
-
-    public void setSymbol(String symbol) {
-        this.symbol = symbol;
+    public TickerVO(String key,ContractVO contract) {
+        this.contract = contract;
+        this.key = key;
     }
 }

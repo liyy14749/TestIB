@@ -2,14 +2,10 @@
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
 package com.stock;
-import java.text.SimpleDateFormat;
-import java.util.*;
 
 import com.ib.client.*;
-import com.stock.cache.DataMap;
-import com.stock.contracts.ContractSamples;
-import com.stock.vo.ContractVO;
-import com.stock.vo.TickerVO;
+import com.stock.cache.DataCache;
+import com.stock.vo.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,13 +35,20 @@ public class SocketTask {
 			}
 		}).start();
 		//! [ereader]
-		// A pause to give the application time to establish the connection
-		// In a production application, it would be best to wait for callbacks to confirm the connection is complete
 		try {
 			Thread.sleep(1000);
-//			subscribeTickData(wrapper.getClient());
-			subscribeMarketDepth(wrapper.getClient());
-//			subscribeHistoricalData(wrapper.getClient());
+			for(ContractVO vo: DataCache.initContract){
+				Contract contract = new Contract();
+				contract.symbol(vo.getSymbol());
+				contract.secType(vo.getSecType());
+				contract.currency(vo.getCurrency());
+				contract.exchange(vo.getExchange());
+				String key = vo.getSymbol()+"_"+vo.getSecType();
+				DataCache.symbolCache.put(key, new SymbolData());
+				subscribeTickData(wrapper.getClient(), contract, vo, key);
+				subscribeMarketDepth(wrapper.getClient(), contract, vo, key);
+				realTimeBars(wrapper.getClient(), contract, vo, key);
+			}
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -56,69 +59,11 @@ public class SocketTask {
 	 * @param client
 	 * @throws InterruptedException
 	 */
-	private static void subscribeTickData(EClientSocket client) throws InterruptedException {
-		/*** Requesting real time market data ***/
-		//Thread.sleep(1000);
-		//! [reqmktdata]
-		for(ContractVO vo:DataMap.initContract){
-			Contract contract = new Contract();
-			contract.symbol(vo.getSymbol());
-			contract.secType(vo.getSecType());
-			contract.currency(vo.getCurrency());
-			contract.exchange(vo.getExchange());
-			contract.strike(0);
-			contract.includeExpired(false);
-			int tid = ++tickerId;
-			DataMap.tickerCache.put(tid,new TickerVO(tid,vo.getSymbol()));
-			client.reqMktData(tid, contract, "", false, false, null);
-		}
-		//! [reqmktdata]
-
-		//! [reqsmartcomponents]
-		//client.reqSmartComponents(1013, "a6");
-		//! [reqsmartcomponents]
-
-	}
-
-	/**
-	 * 订阅历史数据
-	 *
-	 * @param client
-	 * @throws InterruptedException
-	 */
-	private static void subscribeHistoricalData(EClientSocket client) throws InterruptedException {
-		
-		/*** Requesting historical data ***/
-
-		//! [reqHeadTimeStamp]
-		client.reqHeadTimestamp(4003, ContractSamples.USStock(), "TRADES", 1, 1);
-		//! [reqHeadTimeStamp]
-
-		//! [cancelHeadTimestamp]
-		client.cancelHeadTimestamp(4003);
-		//! [cancelHeadTimestamp]
-		
-		//! [reqhistoricaldata]
-		Calendar cal = Calendar.getInstance();
-		cal.add(Calendar.MONTH, -6);
-		SimpleDateFormat form = new SimpleDateFormat("yyyyMMdd HH:mm:ss");
-		String formatted = form.format(cal.getTime());
-		client.reqHistoricalData(4001, ContractSamples.EurGbpFx(), formatted, "1 M", "1 day", "MIDPOINT", 1, 1, false, null);
-		client.reqHistoricalData(4002, ContractSamples.EuropeanStock(), formatted, "10 D", "1 min", "TRADES", 1, 1, false, null);
-		Thread.sleep(2000);
-		/*** Canceling historical data requests ***/
-		client.cancelHistoricalData(4001);
-        client.cancelHistoricalData(4002);
-		//! [reqhistoricaldata]
-		return;
-		//! [reqHistogramData]
-		/*client.reqHistogramData(4004, ContractSamples.USStock(), false, "3 days");
-        //! [reqHistogramData]
-		Thread.sleep(5);
-		
-		//! [cancelHistogramData]
-        client.cancelHistogramData(4004);*/
-		//! [cancelHistogramData]
+	private static void subscribeTickData(EClientSocket client,Contract contract,ContractVO vo,String key) throws InterruptedException {
+		int tid = ++tickerId;
+		DataCache.tickerCache.put(tid,new TickerVO(key,vo));
+		DataCache.symbolCache.get(key).setMktData(new MktData());
+		client.reqMktData(tid, contract, "", false, false, null);
 	}
 
 	/**
@@ -127,26 +72,17 @@ public class SocketTask {
 	 * @param client
 	 * @throws InterruptedException
 	 */
-	private static void subscribeMarketDepth(EClientSocket client) throws InterruptedException {
+	private static void subscribeMarketDepth(EClientSocket client,Contract contract,ContractVO vo,String key) throws InterruptedException {
+		int tid = ++tickerId;
+		DataCache.tickerCache.put(tid,new TickerVO(key,vo));
+		DataCache.symbolCache.get(key).setMktDepth(new MktDepth());
+		client.reqMktDepth(tid, contract, 20, false, null);
+	}
 
-		/*** Requesting the Deep Book ***/
-
-		//! [reqMktDepthExchanges]
-//		client.reqMktDepthExchanges();
-		//! [reqMktDepthExchanges]
-		for(ContractVO vo:DataMap.initContract){
-			Contract contract = new Contract();
-			contract.symbol(vo.getSymbol());
-			contract.secType(vo.getSecType());
-			contract.currency(vo.getCurrency());
-			contract.exchange(vo.getExchange());
-			contract.strike(0);
-			contract.includeExpired(false);
-			int tid = ++tickerId;
-			DataMap.tickerCache.put(tid,new TickerVO(tid,vo.getSymbol()));
-			client.reqMktDepth(tid, contract, 5, false, null);
-		}
-		//! [reqmarketdepth]
-
+	private static void realTimeBars(EClientSocket client,Contract contract,ContractVO vo,String key) throws InterruptedException {
+		int tid = ++tickerId;
+		DataCache.tickerCache.put(tid,new TickerVO(key,vo));
+		DataCache.symbolCache.get(key).setKLineData(new KLineData());
+		client.reqRealTimeBars(tid, contract, 5, "MIDPOINT", true, null);
 	}
 }

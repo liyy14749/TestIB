@@ -1,9 +1,10 @@
-package com.stock.vo;
+package com.stock.vo.redisvo;
 
 import lombok.Data;
 
 @Data
-public class MktData {
+public class MktDataRedis {
+    private String s;
     private Long T;
     private Double b;//买价格
     private Double a;//卖价格
@@ -11,6 +12,4 @@ public class MktData {
     private Double h;//今日最高
     private Double l;//今日最低
 
-    private Integer bidSize;
-    private Integer askSize;//
 }

@@ -1,5 +1,8 @@
 package com.stock.vo;
 
+import lombok.Data;
+
+@Data
 public class ContractVO {
     private String symbol;
     private String secType;
@@ -13,35 +16,4 @@ public class ContractVO {
         this.exchange = exchange;
     }
 
-    public String getSymbol() {
-        return symbol;
-    }
-
-    public void setSymbol(String symbol) {
-        this.symbol = symbol;
-    }
-
-    public String getSecType() {
-        return secType;
-    }
-
-    public void setSecType(String secType) {
-        this.secType = secType;
-    }
-
-    public String getCurrency() {
-        return currency;
-    }
-
-    public void setCurrency(String currency) {
-        this.currency = currency;
-    }
-
-    public String getExchange() {
-        return exchange;
-    }
-
-    public void setExchange(String exchange) {
-        this.exchange = exchange;
-    }
 }

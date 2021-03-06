@@ -1,16 +1,14 @@
 package com.stock.cache;
 
 import com.stock.vo.ContractVO;
-import com.stock.vo.MktData;
+import com.stock.vo.SymbolData;
 import com.stock.vo.TickerVO;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class DataMap {
-    public static Map<Integer, MktData> cache = new ConcurrentHashMap<>();
+public class DataCache {
+    public static Map<String, SymbolData> symbolCache = Collections.synchronizedMap(new LinkedHashMap<>());
     public static Map<Integer, TickerVO> tickerCache = new ConcurrentHashMap<>();
 
     public static List<ContractVO> initContract = new ArrayList<>();
