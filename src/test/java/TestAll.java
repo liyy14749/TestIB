@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class TestAll {
     public static void main(String[] args) {
@@ -20,13 +21,16 @@ public class TestAll {
 //            System.out.println(key);
 //        }
 
-        MktDepth mktData = new MktDepth();
-        TreeMap<Integer, Object[]> map = new TreeMap<>();
-        map.put(1,new Object[]{1,2});
-        mktData.setA(map);
-        MktDepthRedis rd = new MktDepthRedis();
-        BeanUtils.copyProperties(mktData, rd);
-        System.out.println(rd);
-        System.out.println(mktData);
+//        MktDepth mktData = new MktDepth();
+//        TreeMap<Integer, Object[]> map = new TreeMap<>();
+//        map.put(1,new Object[]{1,2});
+//        mktData.setA(map);
+//        MktDepthRedis rd = new MktDepthRedis();
+//        BeanUtils.copyProperties(mktData, rd);
+//        System.out.println(rd);
+//        System.out.println(mktData);
+        AtomicBoolean a = new AtomicBoolean(true);
+        a.set(false);
+        System.out.println(a);
     }
 }

@@ -1,5 +1,6 @@
 package com.stock.scheduler;//package com.game.card.scheduler;
 
+import com.alibaba.fastjson.JSON;
 import com.stock.cache.DataCache;
 import com.stock.core.config.PropConfig;
 import com.stock.vo.KLineData;
@@ -22,7 +23,7 @@ public class KLineScheduler {
 
     private static final Logger log = LoggerFactory.getLogger(KLineScheduler.class);
 
-    @Autowired private RedisTemplate<String, Object> template;
+    @Autowired private RedisTemplate<String, String> template;
     @Autowired private PropConfig propConfig;
 
     private static boolean isRun = false;
@@ -53,7 +54,7 @@ public class KLineScheduler {
                         rd.setT(time);
                         rd.setS(map.get(key).getContract().getSymbol());
                         StringBuilder sb = new StringBuilder("kline_1min_").append(key);
-                        template.opsForZSet().add(sb.toString(), rd, time);
+                        template.opsForZSet().add(sb.toString(), JSON.toJSONString(rd), time);
                     }
                 }
             } catch (Exception e) {

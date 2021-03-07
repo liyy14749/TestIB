@@ -22,7 +22,7 @@ import java.time.Duration;
  * @author: Administrator
  * @date: 2019/12/12 0012
  */
-@Configuration
+//@Configuration
 public class RedisConfig {//extends CachingConfigurerSupport
     @Bean
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory factory) {

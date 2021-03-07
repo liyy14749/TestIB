@@ -8,18 +8,29 @@ import com.stock.cache.DataCache;
 import com.stock.vo.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
+@Component
 public class SocketTask {
+	@Autowired EWrapperImpl wrapper;
+
+	@Value("${my.ib.server.host}")
+	private String ip;
+	@Value("${my.ib.server.port}")
+	private Integer port;
+	@Value("${my.ib.server.clientId}")
+	private Integer clientId;
 
 	private static Logger log = LoggerFactory.getLogger(SocketTask.class);
 
     static int tickerId;
 
-	public static void start(EWrapperImpl wrapper){
-
+	public void start(){
 		final EClientSocket m_client = wrapper.getClient();
 		final EReaderSignal m_signal = wrapper.getSignal();
-		m_client.eConnect("127.0.0.1", 7496, 999);
+		m_client.eConnect(ip, port, clientId);
 		final EReader reader = new EReader(m_client, m_signal);
 
 		reader.start();
@@ -44,7 +55,9 @@ public class SocketTask {
 				contract.currency(vo.getCurrency());
 				contract.exchange(vo.getExchange());
 				String key = vo.getSymbol()+"_"+vo.getSecType();
-				DataCache.symbolCache.put(key, new SymbolData());
+				SymbolData symbolData= new SymbolData();
+				symbolData.setContract(vo);
+				DataCache.symbolCache.put(key, symbolData);
 				subscribeTickData(wrapper.getClient(), contract, vo, key);
 				subscribeMarketDepth(wrapper.getClient(), contract, vo, key);
 				realTimeBars(wrapper.getClient(), contract, vo, key);
@@ -59,7 +72,7 @@ public class SocketTask {
 	 * @param client
 	 * @throws InterruptedException
 	 */
-	private static void subscribeTickData(EClientSocket client,Contract contract,ContractVO vo,String key) throws InterruptedException {
+	private void subscribeTickData(EClientSocket client,Contract contract,ContractVO vo,String key) throws InterruptedException {
 		int tid = ++tickerId;
 		DataCache.tickerCache.put(tid,new TickerVO(key,vo));
 		DataCache.symbolCache.get(key).setMktData(new MktData());
@@ -72,14 +85,14 @@ public class SocketTask {
 	 * @param client
 	 * @throws InterruptedException
 	 */
-	private static void subscribeMarketDepth(EClientSocket client,Contract contract,ContractVO vo,String key) throws InterruptedException {
+	private void subscribeMarketDepth(EClientSocket client,Contract contract,ContractVO vo,String key) throws InterruptedException {
 		int tid = ++tickerId;
 		DataCache.tickerCache.put(tid,new TickerVO(key,vo));
 		DataCache.symbolCache.get(key).setMktDepth(new MktDepth());
 		client.reqMktDepth(tid, contract, 20, false, null);
 	}
 
-	private static void realTimeBars(EClientSocket client,Contract contract,ContractVO vo,String key) throws InterruptedException {
+	private void realTimeBars(EClientSocket client,Contract contract,ContractVO vo,String key) throws InterruptedException {
 		int tid = ++tickerId;
 		DataCache.tickerCache.put(tid,new TickerVO(key,vo));
 		DataCache.symbolCache.get(key).setKLineData(new KLineData());

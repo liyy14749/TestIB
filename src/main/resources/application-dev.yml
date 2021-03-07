@@ -1,3 +1,11 @@
+my:
+  schedule:
+    switch: false
+  ib:
+    server:
+      host: 127.0.0.1
+      port: 7496
+      clientId: 999
 spring:
   redis:
     # Redis数据库索引（默认为0）
