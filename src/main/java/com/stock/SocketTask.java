@@ -54,7 +54,7 @@ public class SocketTask {
 				contract.secType(vo.getSecType());
 				contract.currency(vo.getCurrency());
 				contract.exchange(vo.getExchange());
-				String key = vo.getSymbol()+"_"+vo.getSecType();
+				String key = vo.getSymbol()+"_"+vo.getSecType()+"_"+vo.getCurrency();
 				SymbolData symbolData= new SymbolData();
 				symbolData.setContract(vo);
 				DataCache.symbolCache.put(key, symbolData);
