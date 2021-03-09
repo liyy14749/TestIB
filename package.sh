@@ -1,13 +1,18 @@
 #!/bin/bash
-git pull
-mvn install -Dmaven.test.skip=true
-dirname=$1
-if [ x"$1" = x ]; then
-  dirname='prod'
+
+echo "------------------------------ mvn install [start] ------------------------------"
+mvn clean install -Dmaven.test.skip=true
+echo "------------------------------ mvn install [end] ------------------------------"
+
+echo "------------------------------ package distribute [start] ------------------------------"
+project_root=/opt/webserver/IBCronServer
+if [ ! -d "${project_root}" ]; then
+    mkdir -p ${project_root}
 fi
-echo ${dirname}
-mkdir -p /opt/webserver/IBCronServer/
-cp target/IBCronServer.jar /opt/webserver/IBCronServer/
-cp script/restart.sh /opt/webserver/IBCronServer/ && chmod +x /opt/webserver/IBCronServer/restart.sh
-cp script/spring-boot.sh /opt/webserver/IBCronServer/ && chmod +x /opt/webserver/IBCronServer/spring-boot.sh
-cp script/${dirname}/start.sh /opt/webserver/IBCronServer/ && chmod +x /opt/webserver/IBCronServer/start.sh
+
+cp -f target/IBCronServer.jar ${project_root}
+cp -f script/*.sh ${project_root} && chmod +x ${project_root}/*.sh
+
+ls -al ${project_root}
+echo "------------------------------ package distribute [end] ------------------------------"
+echo "distribute success."

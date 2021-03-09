@@ -1,2 +1,5 @@
 #!/bin/bash
-./spring-boot.sh stop IBCronServer.jar && ./start.sh
+
+source ./stop.sh $1 $2
+
+source ./start.sh $1 $2
