@@ -45,7 +45,7 @@ public class MktDataScheduler {
                 Map<String, SymbolData> map= DataCache.symbolCache;
                 for(String key:map.keySet()){
                     MktData mktData = map.get(key).getMktData();
-                    if(mktData !=null){
+                    if(mktData !=null && !(mktData.getH() ==0 && mktData.getL()==0)){
                         long time = System.currentTimeMillis();
                         MktDataRedis rd = new MktDataRedis();
                         BeanUtils.copyProperties(mktData, rd);

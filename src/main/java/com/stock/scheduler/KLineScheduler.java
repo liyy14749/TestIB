@@ -47,7 +47,7 @@ public class KLineScheduler {
                 Map<String, SymbolData> map= DataCache.symbolCache;
                 for(String key:map.keySet()){
                     KLineData mktData = map.get(key).getKLineData();
-                    if(mktData !=null){
+                    if(mktData !=null && !(mktData.getH()==0 && mktData.getL()==0)){
                         long time = System.currentTimeMillis();
                         KLineDataRedis rd = new KLineDataRedis();
                         BeanUtils.copyProperties(mktData, rd);
