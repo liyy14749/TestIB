@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class DataCache {
     public static Map<String, SymbolData> symbolCache = Collections.synchronizedMap(new LinkedHashMap<>());
     public static Map<Integer, TickerVO> tickerCache = new ConcurrentHashMap<>();
+    public static boolean SERVER_OK = false;
 
     public static List<ContractVO> initContract = new ArrayList<>();
     static {

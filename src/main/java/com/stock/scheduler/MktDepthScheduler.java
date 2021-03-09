@@ -67,6 +67,8 @@ public class MktDepthScheduler {
                         for(Integer position: b.keySet()){
                             bb.add(b.get(position));
                         }
+                        rd.setA(aa);
+                        rd.setB(bb);
                         StringBuilder sb = new StringBuilder("mkt_depth_").append(key);
                         if(aa.size()>0 || bb.size()>0){
                             template.opsForZSet().add(sb.toString(), JSON.toJSONString(rd), time);

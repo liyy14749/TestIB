@@ -100,7 +100,7 @@ public class EWrapperImpl implements EWrapper {
     @Override
     public void updateMktDepth(int tickerId, int position, int operation,
                                int side, double price, int size) {
-        System.out.println("UpdateMarketDepth. " + tickerId + " - Position: " + position + ", Operation: " + operation + ", Side: " + side + ", Price: " + price + ", Size: " + size + "");
+        //System.out.println("UpdateMarketDepth. " + tickerId + " - Position: " + position + ", Operation: " + operation + ", Side: " + side + ", Price: " + price + ", Size: " + size + "");
 
         TickerVO ticker = DataCache.tickerCache.get(tickerId);
         if (ticker == null) {
@@ -471,6 +471,12 @@ public class EWrapperImpl implements EWrapper {
     @Override
     public void error(int id, int errorCode, String errorMsg) {
         System.out.println("Error. Id: " + id + ", Code: " + errorCode + ", Msg: " + errorMsg + "\n");
+        if(id == -1 && (errorCode ==2104|| errorCode ==2106|| errorCode==2158)){
+            DataCache.SERVER_OK = true;
+        } else if(id == -1 && (errorCode == 504 || errorCode == 507 || errorCode == 502)){
+            DataCache.SERVER_OK = false;
+            return;
+        }
     }
 
     //! [error]

@@ -31,21 +31,11 @@ public class SocketTask {
 		final EClientSocket m_client = wrapper.getClient();
 		final EReaderSignal m_signal = wrapper.getSignal();
 		m_client.eConnect(ip, port, clientId);
-		final EReader reader = new EReader(m_client, m_signal);
+		reconnect(m_client, m_signal);
+		reconnectThreadRun(m_client, m_signal);
+	}
 
-		reader.start();
-		//An additional thread is created in this program design to empty the messaging queue
-		new Thread(() -> {
-			while (m_client.isConnected()) {
-				m_signal.waitForSignal();
-				try {
-					reader.processMsgs();
-				} catch (Exception e) {
-					log.error("Exception: ",e);
-				}
-			}
-		}).start();
-		//! [ereader]
+	private void doWork(){
 		try {
 			Thread.sleep(1000);
 			for(ContractVO vo: DataCache.initContract){
@@ -64,6 +54,39 @@ public class SocketTask {
 			}
 		} catch (InterruptedException e) {
 			e.printStackTrace();
+		}
+	}
+
+	private void reconnectThreadRun(final EClientSocket m_client, final EReaderSignal m_signal){
+		new Thread(() -> {
+			while (true) {
+				try {
+					Thread.sleep(5000);
+				} catch (InterruptedException e) {
+				}
+				if (!DataCache.SERVER_OK) {
+					log.info("reconnect");
+					reconnect(m_client, m_signal);
+				}
+			}
+		}).start();
+	}
+	private void reconnect(EClientSocket m_client, EReaderSignal m_signal) {
+		m_client.eConnect(ip, port, clientId);
+		final EReader reader = new EReader(m_client, m_signal);
+		if (m_client.isConnected()) {
+			reader.start();
+			new Thread(() -> {
+				while (m_client.isConnected()) {
+					m_signal.waitForSignal();
+					try {
+						reader.processMsgs();
+					} catch (Exception e) {
+						log.error("Exception: ", e);
+					}
+				}
+			}).start();
+			doWork();
 		}
 	}
 	/**
