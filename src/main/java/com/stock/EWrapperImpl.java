@@ -13,6 +13,7 @@ import com.ib.client.*;
 import com.stock.core.util.RedisUtil;
 import com.stock.vo.*;
 import com.stock.cache.DataCache;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,9 +73,30 @@ public class EWrapperImpl implements EWrapper {
         } else if (field == 7) {
             sd.getMktData().setL(price);
         }
-        sd.getMktData().setT(System.currentTimeMillis());
+//        sd.getMktData().setT(System.currentTimeMillis());
     }
-    //! [tickprice]
+    @Override
+    public void tickString(int tickerId, int tickType, String value) {
+        System.out.println("Tick string. Ticker Id:" + tickerId + ", Type: " + tickType + ", Value: " + value);
+        TickerVO ticker = DataCache.tickerCache.get(tickerId);
+        if (ticker == null) {
+            return;
+        }
+        SymbolData sd = DataCache.symbolCache.get(ticker.getKey());
+        MktData mktData = sd.getMktData();
+        if (sd == null || mktData == null) {
+            return;
+        }
+        if (tickType == 48 && StringUtils.isNotBlank(value)) {
+            String[] ss = value.split(";");
+            if(!StringUtils.isBlank(ss[0])){
+                mktData.setC(Double.parseDouble(ss[0]));
+                mktData.setV(Integer.parseInt(ss[1]));
+                mktData.setT1(Integer.parseInt(ss[3]));
+                mktData.setW(Double.parseDouble(ss[4]));
+            }
+        }
+    }
 
     //! [ticksize]
     @Override
@@ -176,13 +198,6 @@ public class EWrapperImpl implements EWrapper {
     }
     //! [tickgeneric]
 
-    //! [tickstring]
-    @Override
-    public void tickString(int tickerId, int tickType, String value) {
-//		System.out.println("Tick string. Ticker Id:" + tickerId + ", Type: " + tickType + ", Value: " + value);
-    }
-
-    //! [tickstring]
     @Override
     public void tickEFP(int tickerId, int tickType, double basisPoints,
                         String formattedBasisPoints, double impliedFuture, int holdDays,

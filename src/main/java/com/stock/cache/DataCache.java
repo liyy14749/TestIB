@@ -17,5 +17,7 @@ public class DataCache {
         initContract.add(new ContractVO("EUR","CASH","USD","IDEALPRO"));
         initContract.add(new ContractVO("GBP","CASH","USD","IDEALPRO"));
         initContract.add(new ContractVO("USD","CASH","JPY","IDEALPRO"));
+        initContract.add(new ContractVO("IBM","STK","USD","SMART"));
+
     }
 }

@@ -1,10 +1,12 @@
 package com.stock.vo.redisvo;
 
+import com.alibaba.fastjson.annotation.JSONField;
 import lombok.Data;
 
 @Data
 public class MktDataRedis {
     private String s;
+    @JSONField(name = "T")
     private Long T;
     private double b;//买价格
     private double a;//卖价格

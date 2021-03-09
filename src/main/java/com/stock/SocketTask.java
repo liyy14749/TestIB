@@ -99,7 +99,7 @@ public class SocketTask {
 		int tid = ++tickerId;
 		DataCache.tickerCache.put(tid,new TickerVO(key,vo));
 		DataCache.symbolCache.get(key).setMktData(new MktData());
-		client.reqMktData(tid, contract, "", false, false, null);
+		client.reqMktData(tid, contract, "233", false, false, null);
 	}
 
 	/**
