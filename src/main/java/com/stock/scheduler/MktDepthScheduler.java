@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -26,6 +27,9 @@ public class MktDepthScheduler {
 
     @Autowired private RedisTemplate<String, String> template;
     @Autowired private PropConfig propConfig;
+
+    @Value("${my.schedule.interval.depth}")
+    private Long interval;
 
     private static boolean isRun = false;
 
@@ -76,7 +80,7 @@ public class MktDepthScheduler {
                 log.error("MktDataScheduler work error", e);
             }
             try {
-                Thread.sleep(500);
+                Thread.sleep(interval);
             } catch (InterruptedException e) {
                 log.error("MktDataScheduler InterruptedException");
             }

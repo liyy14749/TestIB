@@ -168,6 +168,9 @@ public class EWrapperImpl implements EWrapper {
         if (mktData == null) {
             return;
         }
+        if(mktData.getOpen()==0){
+            mktData.setOpen(kLineData.getOpen());
+        }
         mktData.setLast(close);
     }
     //! [realtimebar]

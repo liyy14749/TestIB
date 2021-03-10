@@ -1,6 +1,11 @@
 my:
   schedule:
     switch: false
+    interval:
+      # 定时任务间隔，单位毫秒
+      kline: 200
+      tick: 500
+      depth: 500
   ib:
     server:
       host: 127.0.0.1

@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -28,6 +29,9 @@ public class KLineScheduler {
     @Autowired private PropConfig propConfig;
 
     private static boolean isRun = false;
+
+    @Value("${my.schedule.interval.kline}")
+    private Long interval;
 
     @PostConstruct
     public void init() {
@@ -62,7 +66,7 @@ public class KLineScheduler {
                 log.error("KLineScheduler work error", e);
             }
             try {
-                Thread.sleep(200);
+                Thread.sleep(interval);
             } catch (InterruptedException e) {
                 log.error("KLineScheduler InterruptedException");
             }
