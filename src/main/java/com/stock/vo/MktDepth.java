@@ -6,7 +6,6 @@ import java.util.TreeMap;
 
 @Data
 public class MktDepth {
-    private Long T;
-    private TreeMap<Integer,Object[]> a = new TreeMap<>();
-    private TreeMap<Integer,Object[]> b = new TreeMap<>();
+    private TreeMap<Integer,Object[]> ask = new TreeMap<>();
+    private TreeMap<Integer,Object[]> bid = new TreeMap<>();
 }

@@ -8,6 +8,7 @@ import com.stock.vo.MktData;
 import com.stock.vo.SymbolData;
 import com.stock.vo.redisvo.KLineDataRedis;
 import com.stock.vo.redisvo.MktDataRedis;
+import io.swagger.models.auth.In;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -44,17 +45,17 @@ public class KLineScheduler {
     public void work() {
     	while (true){
             try {
-                Map<String, SymbolData> map= DataCache.symbolCache;
-                for(String key:map.keySet()){
-                    KLineData mktData = map.get(key).getKLineData();
-                    if(mktData !=null && !(mktData.getH()==0 && mktData.getL()==0)){
-                        long time = System.currentTimeMillis();
+                Map<Integer, SymbolData> map= DataCache.symbolCache;
+                for(Integer key:map.keySet()){
+                    KLineData kLineData = map.get(key).getKLineData();
+                    if(kLineData !=null ){//&& !(kLineData.getHigh()==0 && kLineData.getLow()==0)
+                        long time = System.currentTimeMillis()/1000;
                         KLineDataRedis rd = new KLineDataRedis();
-                        BeanUtils.copyProperties(mktData, rd);
-                        rd.setT(time);
-                        rd.setS(map.get(key).getContract().getSymbol());
-                        StringBuilder sb = new StringBuilder("kline_1min_").append(key);
-                        template.opsForZSet().add(sb.toString(), JSON.toJSONString(rd), time);
+                        BeanUtils.copyProperties(kLineData, rd);
+                        rd.setTime(time);
+                        rd.setSymbol(map.get(key).getContract().getSymbol());
+                        String sb = String.format("kline_%s_%s",key,time/5*5);
+                        template.opsForZSet().add(sb, JSON.toJSONString(rd), time);
                     }
                 }
             } catch (Exception e) {

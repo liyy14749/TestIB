@@ -42,17 +42,21 @@ public class MktDataScheduler {
     public void work() {
     	while (true){
             try {
-                Map<String, SymbolData> map= DataCache.symbolCache;
-                for(String key:map.keySet()){
+                Map<Integer, SymbolData> map= DataCache.symbolCache;
+                for(Integer key:map.keySet()){
                     MktData mktData = map.get(key).getMktData();
-                    if(mktData !=null && !(mktData.getH() ==0 && mktData.getL()==0)){
-                        long time = System.currentTimeMillis();
+                    if(mktData !=null ){//&& !(mktData.getHigh()==0 && mktData.getLow() == 0)
+                        long time = System.currentTimeMillis()/1000;
                         MktDataRedis rd = new MktDataRedis();
                         BeanUtils.copyProperties(mktData, rd);
-                        rd.setT(time);
-                        rd.setS(map.get(key).getContract().getSymbol());
-                        StringBuilder sb = new StringBuilder("mkt_data_").append(key);
-                        template.opsForZSet().add(sb.toString(), JSON.toJSONString(rd), time);
+                        rd.setTime(time/1000);
+                        rd.setSymbol(map.get(key).getContract().getSymbol());
+                        rd.setPrice_change(rd.getLast()-rd.getOpen());
+                        if(rd.getOpen() !=0){
+                            rd.setPrice_change_percent((rd.getLast()-rd.getOpen())/rd.getOpen());
+                        }
+                        String sb = String.format("tick_%s_v3", key);
+                        template.opsForZSet().add(sb, JSON.toJSONString(rd), time);
                     }
                 }
             } catch (Exception e) {

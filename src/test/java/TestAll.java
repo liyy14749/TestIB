@@ -4,6 +4,7 @@ import com.stock.vo.SymbolData;
 import com.stock.vo.redisvo.MktDepthRedis;
 import org.springframework.beans.BeanUtils;
 
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -25,11 +26,14 @@ public class TestAll {
         MktDepth mktData = new MktDepth();
         TreeMap<Integer, Object[]> map = new TreeMap<>();
         map.put(1,new Object[]{1,2});
-        mktData.setA(map);
+        mktData.setAsk(map);
         MktDepthRedis rd = new MktDepthRedis();
         BeanUtils.copyProperties(mktData, rd);
-        rd.setT(System.currentTimeMillis());
+        rd.setTime(System.currentTimeMillis());
         System.out.println(JSON.toJSONString(rd));
+        double a=0.0;
+        long time = System.currentTimeMillis()/1000;
+        System.out.println(time/5);
 //        AtomicBoolean a = new AtomicBoolean(true);
 //        a.set(false);
 //        System.out.println(a);

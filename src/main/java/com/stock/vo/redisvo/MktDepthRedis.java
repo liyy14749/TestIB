@@ -8,9 +8,8 @@ import java.util.List;
 
 @Data
 public class MktDepthRedis {
-    private String s;
-    @JSONField(name = "T")
-    private Long T;
-    private List<Object[]> a = new ArrayList<>();
-    private List<Object[]> b = new ArrayList<>();
+    private String symbol;
+    private Long time;
+    private List<Object[]> ask = new ArrayList<>();
+    private List<Object[]> bid = new ArrayList<>();
 }

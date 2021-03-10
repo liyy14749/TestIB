@@ -4,10 +4,9 @@ import lombok.Data;
 
 @Data
 public class KLineData {
-    private Long T;
-    private double o;//open柱开始价格
-    private double c;//close柱结束价格
-    private double h;//high柱最高价格
-    private double l;//柱最低价格
-    private long v;//成交量
+    private double open;//open柱开始价格
+    private double close;//close柱结束价格
+    private double high=0.0;//high柱最高价格
+    private double low=0.0;//柱最低价格
+    private long volume;//成交量
 }

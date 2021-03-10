@@ -3,29 +3,33 @@
 
 package com.stock;
 
+import com.alibaba.fastjson.JSON;
+import com.ib.client.*;
+import com.stock.cache.DataCache;
+import com.stock.vo.KLineData;
+import com.stock.vo.MktData;
+import com.stock.vo.SymbolData;
+import com.stock.vo.TickerVO;
+import com.stock.vo.redisvo.LatestDealRedis;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Service;
+
 import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import com.ib.client.*;
-import com.stock.core.util.RedisUtil;
-import com.stock.vo.*;
-import com.stock.cache.DataCache;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 @Service
 public class EWrapperImpl implements EWrapper {
 
     private static Logger log = LoggerFactory.getLogger(EWrapperImpl.class);
 
-    @Autowired
-    RedisUtil redisUtil;
+    @Autowired private RedisTemplate<String, String> template;
 
     private EReaderSignal readerSignal;
     private EClientSocket clientSocket;
@@ -58,22 +62,24 @@ public class EWrapperImpl implements EWrapper {
         if (ticker == null) {
             return;
         }
-        SymbolData sd = DataCache.symbolCache.get(ticker.getKey());
+        SymbolData sd = DataCache.symbolCache.get(ticker.getContract().getSymbolId());
         if (sd == null || sd.getMktData() == null) {
             return;
         }
         if (field == 1) {
-            sd.getMktData().setB(price);
+            sd.getMktData().setBid(price);
         } else if (field == 2) {
-            sd.getMktData().setA(price);
+            sd.getMktData().setAsk(price);
         } else if (field == 4) {
-            sd.getMktData().setP(price);
+            sd.getMktData().setLast(price);
+            sd.getMktData().setClose(price);
         } else if (field == 6) {
-            sd.getMktData().setH(price);
+            sd.getMktData().setHigh(price);
         } else if (field == 7) {
-            sd.getMktData().setL(price);
+            sd.getMktData().setLow(price);
+        } else if (field == 9) {
+            sd.getMktData().setClose(price);
         }
-//        sd.getMktData().setT(System.currentTimeMillis());
     }
     @Override
     public void tickString(int tickerId, int tickType, String value) {
@@ -82,7 +88,8 @@ public class EWrapperImpl implements EWrapper {
         if (ticker == null) {
             return;
         }
-        SymbolData sd = DataCache.symbolCache.get(ticker.getKey());
+        Integer symbolId = ticker.getContract().getSymbolId();
+        SymbolData sd = DataCache.symbolCache.get(symbolId);
         MktData mktData = sd.getMktData();
         if (sd == null || mktData == null) {
             return;
@@ -90,10 +97,13 @@ public class EWrapperImpl implements EWrapper {
         if (tickType == 48 && StringUtils.isNotBlank(value)) {
             String[] ss = value.split(";");
             if(!StringUtils.isBlank(ss[0])){
-                mktData.setC(Double.parseDouble(ss[0]));
-                mktData.setV(Integer.parseInt(ss[1]));
-                mktData.setT1(Integer.parseInt(ss[3]));
-                mktData.setW(Double.parseDouble(ss[4]));
+                long time = System.currentTimeMillis()/1000;
+                LatestDealRedis deal = new LatestDealRedis();
+                deal.setPrice(Double.parseDouble(ss[0]));
+                deal.setVolume(Integer.parseInt(ss[1]));
+                deal.setTime(time);
+                deal.setMaker(Boolean.parseBoolean(ss[5]));
+                template.opsForZSet().add(String.format("order_%s",symbolId), JSON.toJSONString(deal), time);
             }
         }
     }
@@ -102,19 +112,6 @@ public class EWrapperImpl implements EWrapper {
     @Override
     public void tickSize(int tickerId, int field, int size) {
         System.out.println("Tick Size. Ticker Id:" + tickerId + ", Field: " + field + ", Size: " + size);
-        TickerVO ticker = DataCache.tickerCache.get(tickerId);
-        if (ticker == null) {
-            return;
-        }
-        SymbolData sd = DataCache.symbolCache.get(ticker.getKey());
-        if (sd == null || sd.getMktData() == null) {
-            return;
-        }
-        if (field == 0) {
-            sd.getMktData().setBidSize(size);
-        } else if (field == 3) {
-            sd.getMktData().setAskSize(size);
-        }
     }
     //! [ticksize]
 
@@ -128,24 +125,23 @@ public class EWrapperImpl implements EWrapper {
         if (ticker == null) {
             return;
         }
-        SymbolData sd = DataCache.symbolCache.get(ticker.getKey());
+        SymbolData sd = DataCache.symbolCache.get(ticker.getContract().getSymbolId());
         if (sd == null || sd.getMktDepth() == null) {
             return;
         }
         if (operation == 0 || operation == 1) {
             if (side == 0) {
-                sd.getMktDepth().getA().put(position, new Object[]{price, size});
+                sd.getMktDepth().getAsk().put(position, new Object[]{price, size});
             } else if (side == 1) {
-                sd.getMktDepth().getB().put(position, new Object[]{price, size});
+                sd.getMktDepth().getBid().put(position, new Object[]{price, size});
             }
         } else if (operation == 2) {
             if (side == 0) {
-                sd.getMktDepth().getA().remove(position);
+                sd.getMktDepth().getAsk().remove(position);
             } else if (side == 1) {
-                sd.getMktDepth().getB().remove(position);
+                sd.getMktDepth().getBid().remove(position);
             }
         }
-        sd.getMktDepth().setT(System.currentTimeMillis());
     }
     //! [updatemktdepth]
 
@@ -158,17 +154,21 @@ public class EWrapperImpl implements EWrapper {
         if (ticker == null) {
             return;
         }
-        SymbolData sd = DataCache.symbolCache.get(ticker.getKey());
+        SymbolData sd = DataCache.symbolCache.get(ticker.getContract().getSymbolId());
         KLineData kLineData = sd.getKLineData();
         if (sd == null || kLineData == null) {
             return;
         }
-        kLineData.setO(open);
-        kLineData.setC(close);
-        kLineData.setH(high);
-        kLineData.setL(low);
-        kLineData.setV(volume);
-        kLineData.setT(System.currentTimeMillis());
+        kLineData.setOpen(open);
+        kLineData.setClose(close);
+        kLineData.setHigh(high);
+        kLineData.setLow(low);
+        kLineData.setVolume(volume);
+        MktData mktData = sd.getMktData();
+        if (mktData == null) {
+            return;
+        }
+        mktData.setLast(close);
     }
     //! [realtimebar]
 

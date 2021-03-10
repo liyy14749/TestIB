@@ -1,17 +1,18 @@
 package com.stock.vo.redisvo;
 
-import com.alibaba.fastjson.annotation.JSONField;
 import lombok.Data;
 
 @Data
 public class MktDataRedis {
-    private String s;
-    @JSONField(name = "T")
-    private Long T;
-    private double b;//买价格
-    private double a;//卖价格
-    private double p;//最新价格
-    private double h;//今日最高
-    private double l;//今日最低
-
+    private String symbol;
+    private long time;
+    private double bid;//买价格
+    private double ask;//卖价格
+    private double last;//最新价格
+    private double high;//今日最高
+    private double low;//今日最低
+    private double close;//最后交易价格
+    private double open;//开盘价格
+    private double price_change;//今日涨跌
+    private double price_change_percent;//今天涨跌百分比
 }

@@ -5,11 +5,9 @@ import lombok.Data;
 @Data
 public class TickerVO {
     private int tickerId;
-    private String key;
     private ContractVO contract;
 
-    public TickerVO(String key,ContractVO contract) {
+    public TickerVO(ContractVO contract) {
         this.contract = contract;
-        this.key = key;
     }
 }

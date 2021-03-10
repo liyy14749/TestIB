@@ -44,13 +44,12 @@ public class SocketTask {
 				contract.secType(vo.getSecType());
 				contract.currency(vo.getCurrency());
 				contract.exchange(vo.getExchange());
-				String key = vo.getSymbol()+"_"+vo.getSecType()+"_"+vo.getCurrency();
 				SymbolData symbolData= new SymbolData();
 				symbolData.setContract(vo);
-				DataCache.symbolCache.put(key, symbolData);
-				subscribeTickData(wrapper.getClient(), contract, vo, key);
-				subscribeMarketDepth(wrapper.getClient(), contract, vo, key);
-				realTimeBars(wrapper.getClient(), contract, vo, key);
+				DataCache.symbolCache.put(vo.getSymbolId(), symbolData);
+				subscribeTickData(wrapper.getClient(), contract, vo);
+				subscribeMarketDepth(wrapper.getClient(), contract, vo);
+				realTimeBars(wrapper.getClient(), contract, vo);
 			}
 		} catch (InterruptedException e) {
 			e.printStackTrace();
@@ -95,10 +94,10 @@ public class SocketTask {
 	 * @param client
 	 * @throws InterruptedException
 	 */
-	private void subscribeTickData(EClientSocket client,Contract contract,ContractVO vo,String key) throws InterruptedException {
+	private void subscribeTickData(EClientSocket client,Contract contract,ContractVO vo) throws InterruptedException {
 		int tid = ++tickerId;
-		DataCache.tickerCache.put(tid,new TickerVO(key,vo));
-		DataCache.symbolCache.get(key).setMktData(new MktData());
+		DataCache.tickerCache.put(tid,new TickerVO(vo));
+		DataCache.symbolCache.get(vo.getSymbolId()).setMktData(new MktData());
 		client.reqMktData(tid, contract, "233", false, false, null);
 	}
 
@@ -108,17 +107,17 @@ public class SocketTask {
 	 * @param client
 	 * @throws InterruptedException
 	 */
-	private void subscribeMarketDepth(EClientSocket client,Contract contract,ContractVO vo,String key) throws InterruptedException {
+	private void subscribeMarketDepth(EClientSocket client,Contract contract,ContractVO vo) throws InterruptedException {
 		int tid = ++tickerId;
-		DataCache.tickerCache.put(tid,new TickerVO(key,vo));
-		DataCache.symbolCache.get(key).setMktDepth(new MktDepth());
+		DataCache.tickerCache.put(tid,new TickerVO(vo));
+		DataCache.symbolCache.get(vo.getSymbolId()).setMktDepth(new MktDepth());
 		client.reqMktDepth(tid, contract, 20, false, null);
 	}
 
-	private void realTimeBars(EClientSocket client,Contract contract,ContractVO vo,String key) throws InterruptedException {
+	private void realTimeBars(EClientSocket client,Contract contract,ContractVO vo) throws InterruptedException {
 		int tid = ++tickerId;
-		DataCache.tickerCache.put(tid,new TickerVO(key,vo));
-		DataCache.symbolCache.get(key).setKLineData(new KLineData());
+		DataCache.tickerCache.put(tid,new TickerVO(vo));
+		DataCache.symbolCache.get(vo.getSymbolId()).setKLineData(new KLineData());
 		client.reqRealTimeBars(tid, contract, 5, "MIDPOINT", true, null);
 	}
 }
