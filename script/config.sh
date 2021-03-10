@@ -5,6 +5,12 @@ PROJECT_NAME="IBCronServer"
 PROJECT_NAME_JAR="${PROJECT_NAME}.jar"
 CUR_TIME=$(date "+%Y-%m-%d %H:%M:%S");
 
+# 项目目录
+PROJECT_PATH="/opt/webserver/${PROJECT_NAME}"
+if [ ! -d "${PROJECT_PATH}" ]; then
+    mkdir -p ${PROJECT_PATH}
+fi
+
 # 日志目录
 PROJECT_LOG_PATH="/opt/weblogs/${PROJECT_NAME}"
 PROJECT_CONSOLE_LOG_PATH="${PROJECT_LOG_PATH}/console"
@@ -22,7 +28,7 @@ fi
 echo "ACTIVE: ${ACTIVE}"
 
 # 客户端ID
-CLIENT_ID=0
+CLIENT_ID=7000
 if [ x"$2" != x ]; then
   CLIENT_ID=$2
 fi
