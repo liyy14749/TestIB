@@ -83,7 +83,7 @@ public class EWrapperImpl implements EWrapper {
             if(lastClose!=null){
                 BigDecimal price_change = new BigDecimal(String.valueOf(price)).subtract(new BigDecimal(lastClose));
                 redisUtil.hashPut(key,"price_change", price_change);
-                BigDecimal percent = price_change.divide(new BigDecimal(lastClose) ,8 ,BigDecimal.ROUND_HALF_UP);
+                BigDecimal percent = price_change.divide(new BigDecimal(lastClose) ,5 ,BigDecimal.ROUND_FLOOR);
                 redisUtil.hashPut(key,"percent", percent);
 
             }
