@@ -72,7 +72,8 @@ public class MktDepthScheduler {
                         rd.setBid(bb);
                         String sb = String.format("depth_%s" ,key);
                         if(aa.size()>0 || bb.size()>0){
-                            template.opsForZSet().add(sb, JSON.toJSONString(rd), time);
+//                            template.opsForZSet().add(sb, JSON.toJSONString(rd), time);
+                            template.opsForValue().set(sb, JSON.toJSONString(rd));
                         }
                     }
                 }
