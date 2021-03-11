@@ -14,10 +14,10 @@ public class DataCache {
 
     public static List<ContractVO> initContract = new ArrayList<>();
     static {
-        initContract.add(new ContractVO("EUR","CASH","USD","IDEALPRO", 1));
-        initContract.add(new ContractVO("GBP","CASH","USD","IDEALPRO",2));
-        initContract.add(new ContractVO("USD","CASH","JPY","IDEALPRO",3));
-        initContract.add(new ContractVO("IBM","STK","USD","SMART",4));
+        initContract.add(new ContractVO("TSLA","STK","USD","ISLAND", 1));
+        initContract.add(new ContractVO("AAPL","STK","USD","ISLAND",2));
+        initContract.add(new ContractVO("9988","STK","HKD","SEHK",3));
+        initContract.add(new ContractVO("IBM","STK","USD","NYSE",4));
 
     }
 }

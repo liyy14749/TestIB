@@ -33,7 +33,7 @@ public class KLineScheduler {
     @Value("${my.schedule.interval.kline}")
     private Long interval;
 
-    @PostConstruct
+    //@PostConstruct
     public void init() {
         new Thread(() -> {
             if(!isRun){
@@ -58,7 +58,7 @@ public class KLineScheduler {
                         BeanUtils.copyProperties(kLineData, rd);
                         rd.setTime(time);
                         rd.setSymbol(map.get(key).getContract().getSymbol());
-                        String sb = String.format("kline_%s_%s",key,time/5*5);
+                        String sb = String.format("kline_%s_5sec",key);
                         template.opsForZSet().add(sb, JSON.toJSONString(rd), time);
                     }
                 }

@@ -6,18 +6,22 @@ package com.stock;
 import com.alibaba.fastjson.JSON;
 import com.ib.client.*;
 import com.stock.cache.DataCache;
+import com.stock.core.util.RedisUtil;
 import com.stock.vo.KLineData;
 import com.stock.vo.MktData;
 import com.stock.vo.SymbolData;
 import com.stock.vo.TickerVO;
+import com.stock.vo.redisvo.KLineDataRedis;
 import com.stock.vo.redisvo.LatestDealRedis;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +34,7 @@ public class EWrapperImpl implements EWrapper {
     private static Logger log = LoggerFactory.getLogger(EWrapperImpl.class);
 
     @Autowired private RedisTemplate<String, String> template;
+    @Autowired private RedisUtil redisUtil;
 
     private EReaderSignal readerSignal;
     private EClientSocket clientSocket;
@@ -66,20 +71,31 @@ public class EWrapperImpl implements EWrapper {
         if (sd == null || sd.getMktData() == null) {
             return;
         }
+        String key = String.format("tick_%s_v3",sd.getContract().getSymbolId());
         if (field == 1) {
-            sd.getMktData().setBid(price);
+            redisUtil.hashPut(key,"bid",price);
         } else if (field == 2) {
-            sd.getMktData().setAsk(price);
+            redisUtil.hashPut(key,"ask",price);
         } else if (field == 4) {
-            sd.getMktData().setLast(price);
-            sd.getMktData().setClose(price);
+            redisUtil.hashPut(key,"last",price);
+            redisUtil.hashPut(key,"close",price);
+            String lastClose = redisUtil.hashGet(key,"last_close");
+            if(lastClose!=null){
+                BigDecimal price_change = new BigDecimal(String.valueOf(price)).subtract(new BigDecimal(lastClose));
+                redisUtil.hashPut(key,"price_change", price_change);
+                BigDecimal percent = price_change.divide(new BigDecimal(lastClose) ,8 ,BigDecimal.ROUND_HALF_UP);
+                redisUtil.hashPut(key,"percent", percent);
+
+            }
         } else if (field == 6) {
-            sd.getMktData().setHigh(price);
+            redisUtil.hashPut(key,"high",price);
         } else if (field == 7) {
-            sd.getMktData().setLow(price);
+            redisUtil.hashPut(key,"low",price);
         } else if (field == 9) {
-            sd.getMktData().setClose(price);
+            redisUtil.hashPut(key,"close",price);
         }
+        redisUtil.hashPut(key,"time",System.currentTimeMillis()/1000);
+        redisUtil.hashPut(key,"symbol",sd.getContract().getSymbol());
     }
     @Override
     public void tickString(int tickerId, int tickType, String value) {
@@ -115,7 +131,6 @@ public class EWrapperImpl implements EWrapper {
     }
     //! [ticksize]
 
-    //! [updatemktdepth]
     @Override
     public void updateMktDepth(int tickerId, int position, int operation,
                                int side, double price, int size) {
@@ -143,7 +158,33 @@ public class EWrapperImpl implements EWrapper {
             }
         }
     }
-    //! [updatemktdepth]
+
+    @Override
+    public void updateMktDepthL2(int tickerId, int position,
+                                 String marketMaker, int operation, int side, double price, int size, boolean isSmartDepth) {
+        System.out.println("UpdateMarketDepthL2. " + tickerId + " - Position: " + position + ", Operation: " + operation + ", Side: " + side + ", Price: " + price + ", Size: " + size + ", isSmartDepth: " + isSmartDepth);
+        TickerVO ticker = DataCache.tickerCache.get(tickerId);
+        if (ticker == null) {
+            return;
+        }
+        SymbolData sd = DataCache.symbolCache.get(ticker.getContract().getSymbolId());
+        if (sd == null || sd.getMktDepth() == null) {
+            return;
+        }
+        if (operation == 0 || operation == 1) {
+            if (side == 0) {
+                sd.getMktDepth().getAsk().put(position, new Object[]{price, size});
+            } else if (side == 1) {
+                sd.getMktDepth().getBid().put(position, new Object[]{price, size});
+            }
+        } else if (operation == 2) {
+            if (side == 0) {
+                sd.getMktDepth().getAsk().remove(position);
+            } else if (side == 1) {
+                sd.getMktDepth().getBid().remove(position);
+            }
+        }
+    }
 
     //! [realtimebar]
     @Override
@@ -155,33 +196,25 @@ public class EWrapperImpl implements EWrapper {
             return;
         }
         SymbolData sd = DataCache.symbolCache.get(ticker.getContract().getSymbolId());
-        KLineData kLineData = sd.getKLineData();
-        if (sd == null || kLineData == null) {
+        if(sd == null){
             return;
         }
-        kLineData.setOpen(open);
-        kLineData.setClose(close);
-        kLineData.setHigh(high);
-        kLineData.setLow(low);
-        kLineData.setVolume(volume);
-        MktData mktData = sd.getMktData();
-        if (mktData == null) {
-            return;
-        }
-        if(mktData.getOpen()==0){
-            mktData.setOpen(kLineData.getOpen());
-        }
-        mktData.setLast(close);
+        KLineDataRedis rd = new KLineDataRedis();
+        rd.setOpen(open);
+        rd.setClose(close);
+        rd.setHigh(high);
+        rd.setLow(low);
+        rd.setVolume(volume);
+        rd.setTime(time);
+        rd.setSymbol(ticker.getContract().getSymbol());
+        String sb = String.format("kline_%s_5sec",ticker.getContract().getSymbolId());
+        template.opsForZSet().add(sb, JSON.toJSONString(rd), time);
+
+        String key = String.format("tick_%s_v3",sd.getContract().getSymbolId());
+        redisUtil.hashPut(key,"last_close",open);
+        redisUtil.hashPut(key,"open",open);
     }
     //! [realtimebar]
-
-    //! [updatemktdepthl2]
-    @Override
-    public void updateMktDepthL2(int tickerId, int position,
-                                 String marketMaker, int operation, int side, double price, int size, boolean isSmartDepth) {
-        System.out.println("UpdateMarketDepthL2. " + tickerId + " - Position: " + position + ", Operation: " + operation + ", Side: " + side + ", Price: " + price + ", Size: " + size + ", isSmartDepth: " + isSmartDepth);
-    }
-    //! [updatemktdepthl2]
 
     //! [tickoptioncomputation]
     @Override

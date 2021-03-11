@@ -19,10 +19,13 @@ public class RedisUtil {
 	@Autowired
 	private RedisTemplate<String, String> template;
 
-//	public void hashPut(String prefix,String symbol,String field,Object value){
-//		StringBuilder sb = new StringBuilder().append(prefix).append(":").append(symbol);
-//		template.opsForHash().put(sb.toString(),field,String.valueOf(value));
-//	}
+	public void hashPut(String key,String field,Object value){
+		template.opsForHash().put(key,field,String.valueOf(value));
+	}
+
+	public String hashGet(String key,String field){
+		return (String) template.opsForHash().get(key,field);
+	}
 //
 //	public void zsetAdd(String prefix, String symbol,int side, int position, DepthLineVO value){
 //		StringBuilder sb = new StringBuilder().append(prefix).append(":").append(symbol).append(":").append(side);

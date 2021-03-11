@@ -30,7 +30,7 @@ public class MktDataScheduler {
 
     private static boolean isRun = false;
 
-    @PostConstruct
+    //@PostConstruct
     public void init() {
         new Thread(() -> {
             if(!isRun){
