@@ -71,6 +71,9 @@ public class EWrapperImpl implements EWrapper {
         if (sd == null || sd.getMktData() == null) {
             return;
         }
+        if(price == -1){
+            return;
+        }
         String key = String.format("tick_%s_v3",sd.getContract().getSymbolId());
         if (field == 1) {
             redisUtil.hashPut(key,"bid",price);
@@ -95,7 +98,6 @@ public class EWrapperImpl implements EWrapper {
             redisUtil.hashPut(key,"close",price);
         }
         redisUtil.hashPut(key,"time",System.currentTimeMillis()/1000);
-        redisUtil.hashPut(key,"symbol",sd.getContract().getSymbol());
     }
     @Override
     public void tickString(int tickerId, int tickType, String value) {

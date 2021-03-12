@@ -5,6 +5,7 @@ package com.stock;
 
 import com.ib.client.*;
 import com.stock.cache.DataCache;
+import com.stock.core.util.RedisUtil;
 import com.stock.vo.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +16,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class SocketTask {
 	@Autowired EWrapperImpl wrapper;
-
+	@Autowired private RedisUtil redisUtil;
 	@Value("${my.ib.server.host}")
 	private String ip;
 	@Value("${my.ib.server.port}")
@@ -46,6 +47,9 @@ public class SocketTask {
 				contract.exchange(vo.getExchange());
 				SymbolData symbolData= new SymbolData();
 				symbolData.setContract(vo);
+
+				String key = String.format("tick_%s_v3",vo.getSymbolId());
+				redisUtil.hashPut(key,"symbol",vo.getSymbol());
 				DataCache.symbolCache.put(vo.getSymbolId(), symbolData);
 				subscribeTickData(wrapper.getClient(), contract, vo);
 				subscribeMarketDepth(wrapper.getClient(), contract, vo);
