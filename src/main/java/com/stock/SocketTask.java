@@ -39,7 +39,7 @@ public class SocketTask {
 	private void doWork(){
 		try {
 			Thread.sleep(1000);
-			for(ContractVO vo: DataCache.initContract){
+			for(ContractVO vo: DataCache.usContracts){
 				Contract contract = new Contract();
 				contract.symbol(vo.getSymbol());
 				contract.secType(vo.getSecType());

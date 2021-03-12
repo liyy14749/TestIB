@@ -9,6 +9,7 @@ public class ContractVO {
     private String currency;
     private String exchange;
     private Integer symbolId;
+    private String primaryExch;
 
     public ContractVO(String symbol, String secType, String currency, String exchange, Integer symbolId) {
         this.symbol = symbol;

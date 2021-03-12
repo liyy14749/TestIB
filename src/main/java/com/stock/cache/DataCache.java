@@ -12,14 +12,15 @@ public class DataCache {
     public static Map<Integer, TickerVO> tickerCache = new ConcurrentHashMap<>();
     public static boolean SERVER_OK = false;
 
-    public static List<ContractVO> initContract = new ArrayList<>();
-    static {
-        initContract.add(new ContractVO("TSLA","STK","USD","ISLAND", 1));
-        initContract.add(new ContractVO("AAPL","STK","USD","ISLAND",2));
-        initContract.add(new ContractVO("9988","STK","HKD","SEHK",3));
-        initContract.add(new ContractVO("IBM","STK","USD","NYSE",4));
-        initContract.add(new ContractVO("939","STK","HKD","SEHK",5));
-        initContract.add(new ContractVO("1810","STK","HKD","SEHK",6));
-
-    }
+    public static List<ContractVO> usContracts;
+    public static List<ContractVO> hkContracts;
+//    static {
+//        usContracts.add(new ContractVO("TSLA","STK","USD","ISLAND", 1));
+//        usContracts.add(new ContractVO("AAPL","STK","USD","ISLAND",2));
+//        usContracts.add(new ContractVO("9988","STK","HKD","SEHK",3));
+//        usContracts.add(new ContractVO("IBM","STK","USD","ISLAND",4));
+//        usContracts.add(new ContractVO("939","STK","HKD","SEHK",5));
+//        usContracts.add(new ContractVO("1810","STK","HKD","SEHK",6));
+//
+//    }
 }
