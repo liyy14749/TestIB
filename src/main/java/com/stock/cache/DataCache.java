@@ -18,6 +18,8 @@ public class DataCache {
         initContract.add(new ContractVO("AAPL","STK","USD","ISLAND",2));
         initContract.add(new ContractVO("9988","STK","HKD","SEHK",3));
         initContract.add(new ContractVO("IBM","STK","USD","NYSE",4));
+        initContract.add(new ContractVO("939","STK","HKD","SEHK",5));
+        initContract.add(new ContractVO("1810","STK","HKD","SEHK",6));
 
     }
 }
