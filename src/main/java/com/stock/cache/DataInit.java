@@ -23,15 +23,15 @@ public class DataInit {
         template.opsForList().trim("stock_static_symbol_us",1,0);
         template.opsForList().trim("stock_static_symbol_hk",1,0);
         List<String> usContracts = new ArrayList<>();
-        usContracts.add(JSON.toJSONString(new ContractVO("TSLA","STK","USD","ISLAND", 1)));
-        usContracts.add(JSON.toJSONString(new ContractVO("AAPL","STK","USD","ISLAND",2)));
-        usContracts.add(JSON.toJSONString(new ContractVO("IBM","STK","USD","ISLAND",4)));
+        usContracts.add(JSON.toJSONString(new ContractVO("TSLA","STK","USD","ISLAND", 100001)));
+        usContracts.add(JSON.toJSONString(new ContractVO("AAPL","STK","USD","ISLAND",100002)));
+        usContracts.add(JSON.toJSONString(new ContractVO("IBM","STK","USD","ISLAND",100004)));
         template.opsForList().leftPushAll("stock_static_symbol_us", usContracts);
 
         List<String> hkContracts = new ArrayList<>();
-        hkContracts.add(JSON.toJSONString(new ContractVO("9988","STK","HKD","SEHK",3)));
-        hkContracts.add(JSON.toJSONString(new ContractVO("939","STK","HKD","SEHK",5)));
-        hkContracts.add(JSON.toJSONString(new ContractVO("1810","STK","HKD","SEHK",6)));
+        hkContracts.add(JSON.toJSONString(new ContractVO("9988","STK","HKD","SEHK",100003)));
+        hkContracts.add(JSON.toJSONString(new ContractVO("939","STK","HKD","SEHK",100005)));
+        hkContracts.add(JSON.toJSONString(new ContractVO("1810","STK","HKD","SEHK",100006)));
         template.opsForList().leftPushAll("stock_static_symbol_hk", hkContracts);
 
         List<String> us = template.opsForList().range("stock_static_symbol_us",0,-1);
