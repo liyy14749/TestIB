@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 public class SocketTask {
 	@Autowired EWrapperImpl wrapper;
@@ -36,10 +38,10 @@ public class SocketTask {
 		reconnectThreadRun(m_client, m_signal);
 	}
 
-	private void doWork(){
+	private void doWork(List<ContractVO> contracts){
 		try {
 			Thread.sleep(1000);
-			for(ContractVO vo: DataCache.usContracts){
+			for(ContractVO vo: contracts){
 				Contract contract = new Contract();
 				contract.symbol(vo.getSymbol());
 				contract.secType(vo.getSecType());
@@ -89,7 +91,8 @@ public class SocketTask {
 					}
 				}
 			}).start();
-			doWork();
+			doWork(DataCache.usContracts);
+			doWork(DataCache.hkContracts);
 		}
 	}
 	/**
