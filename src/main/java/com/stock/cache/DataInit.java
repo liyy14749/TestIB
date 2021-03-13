@@ -20,28 +20,30 @@ public class DataInit {
 
     @PostConstruct
     public void init(){
-        template.opsForList().trim("stock_static_symbol_us",1,0);
-        template.opsForList().trim("stock_static_symbol_hk",1,0);
+        String usKey = "stock_static_symbol_us";
+        String ukKey = "stock_static_symbol_hk";
+        template.opsForList().trim(usKey,1,0);
+        template.opsForList().trim(ukKey,1,0);
         List<String> usContracts = new ArrayList<>();
         usContracts.add(JSON.toJSONString(new ContractVO("TSLA","STK","USD","ISLAND", 100001)));
         usContracts.add(JSON.toJSONString(new ContractVO("AAPL","STK","USD","ISLAND",100002)));
         usContracts.add(JSON.toJSONString(new ContractVO("IBM","STK","USD","ISLAND",100004)));
-        template.opsForList().leftPushAll("stock_static_symbol_us", usContracts);
+        template.opsForList().leftPushAll(usKey, usContracts);
 
         List<String> hkContracts = new ArrayList<>();
         hkContracts.add(JSON.toJSONString(new ContractVO("9988","STK","HKD","SEHK",100003)));
         hkContracts.add(JSON.toJSONString(new ContractVO("939","STK","HKD","SEHK",100005)));
         hkContracts.add(JSON.toJSONString(new ContractVO("1810","STK","HKD","SEHK",100006)));
-        template.opsForList().leftPushAll("stock_static_symbol_hk", hkContracts);
+        template.opsForList().leftPushAll(ukKey, hkContracts);
 
-        List<String> us = template.opsForList().range("stock_static_symbol_us",0,-1);
+        List<String> us = template.opsForList().range(usKey,0,-1);
         List<ContractVO> usList= new ArrayList<>();
         for(String u:us){
             usList.add(JSON.parseObject(u,ContractVO.class));
         }
         DataCache.usContracts = usList;
         List<ContractVO> hkList= new ArrayList<>();
-        List<String> hk = template.opsForList().range("stock_static_symbol_hk",0,-1);
+        List<String> hk = template.opsForList().range(ukKey,0,-1);
         for(String h:hk){
             usList.add(JSON.parseObject(h,ContractVO.class));
         }
