@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -35,6 +36,8 @@ public class EWrapperImpl implements EWrapper {
 
     @Autowired private RedisTemplate<String, String> template;
     @Autowired private RedisUtil redisUtil;
+    @Value("${spring.profiles.active}")
+    private String env;
 
     private EReaderSignal readerSignal;
     private EClientSocket clientSocket;
@@ -212,9 +215,11 @@ public class EWrapperImpl implements EWrapper {
         String sb = String.format("kline_%s_5sec",ticker.getContract().getSymbolId());
         template.opsForZSet().add(sb, JSON.toJSONString(rd), time);
 
-        String key = String.format("tick_%s_v3",sd.getContract().getSymbolId());
-        redisUtil.hashPut(key,"last_close",open);
-        redisUtil.hashPut(key,"open",open);
+        if(env.equals("dev")){
+            String key = String.format("tick_%s_v3",sd.getContract().getSymbolId());
+            redisUtil.hashPut(key,"last_close",open);
+            redisUtil.hashPut(key,"open",open);
+        }
     }
     //! [realtimebar]
 
