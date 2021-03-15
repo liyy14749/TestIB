@@ -60,7 +60,7 @@ public class EWrapperImpl implements EWrapper {
 
     @Override
     public void tickPrice(int tickerId, int field, double price, TickAttrib attribs) {
-        log.debug("Tick Price. Ticker Id:" + tickerId + ", Field: " + field + ", Price: " + price + ", CanAutoExecute: " + attribs.canAutoExecute()
+        log.debug("tick Price. Ticker Id:" + tickerId + ", Field: " + field + ", Price: " + price + ", CanAutoExecute: " + attribs.canAutoExecute()
                 + ", pastLimit: " + attribs.pastLimit() + ", pre-open: " + attribs.preOpen());
         TickerVO ticker = DataCache.tickerCache.get(tickerId);
         if (ticker == null) {
@@ -100,7 +100,7 @@ public class EWrapperImpl implements EWrapper {
     }
     @Override
     public void tickString(int tickerId, int tickType, String value) {
-        log.debug("Tick string. Ticker Id:" + tickerId + ", Type: " + tickType + ", Value: " + value);
+        log.debug("tick string. Ticker Id:" + tickerId + ", Type: " + tickType + ", Value: " + value);
         TickerVO ticker = DataCache.tickerCache.get(tickerId);
         if (ticker == null) {
             return;
@@ -127,13 +127,13 @@ public class EWrapperImpl implements EWrapper {
 
     @Override
     public void tickSize(int tickerId, int field, int size) {
-        log.debug("Tick Size. Ticker Id:" + tickerId + ", Field: " + field + ", Size: " + size);
+        log.debug("tick Size. Ticker Id:" + tickerId + ", Field: " + field + ", Size: " + size);
     }
 
     @Override
     public void updateMktDepth(int tickerId, int position, int operation,
                                int side, double price, int size) {
-        log.debug("UpdateMarketDepth. " + tickerId + " - Position: " + position + ", Operation: " + operation + ", Side: " + side + ", Price: " + price + ", Size: " + size + "");
+        log.debug("depth. " + tickerId + " - Position: " + position + ", Operation: " + operation + ", Side: " + side + ", Price: " + price + ", Size: " + size + "");
 
         TickerVO ticker = DataCache.tickerCache.get(tickerId);
         if (ticker == null) {
@@ -161,7 +161,7 @@ public class EWrapperImpl implements EWrapper {
     @Override
     public void updateMktDepthL2(int tickerId, int position,
                                  String marketMaker, int operation, int side, double price, int size, boolean isSmartDepth) {
-        log.debug("UpdateMarketDepthL2. " + tickerId + " - Position: " + position + ", Operation: " + operation + ", Side: " + side + ", Price: " + price + ", Size: " + size + ", isSmartDepth: " + isSmartDepth);
+        log.debug("depth. " + tickerId + " - Position: " + position + ", Operation: " + operation + ", Side: " + side + ", Price: " + price + ", Size: " + size + ", isSmartDepth: " + isSmartDepth);
         TickerVO ticker = DataCache.tickerCache.get(tickerId);
         if (ticker == null) {
             return;
@@ -188,7 +188,7 @@ public class EWrapperImpl implements EWrapper {
     @Override
     public void realtimeBar(int reqId, long time, double open, double high,
                             double low, double close, long volume, double wap, int count) {
-        log.debug("RealTimeBars. " + reqId + " - Time: " + time + ", Open: " + open + ", High: " + high + ", Low: " + low + ", Close: " + close + ", Volume: " + volume + ", Count: " + count + ", WAP: " + wap);
+        log.debug("kline. " + reqId + " - Time: " + time + ", Open: " + open + ", High: " + high + ", Low: " + low + ", Close: " + close + ", Volume: " + volume + ", Count: " + count + ", WAP: " + wap);
         TickerVO ticker = DataCache.tickerCache.get(reqId);
         if (ticker == null) {
             return;
