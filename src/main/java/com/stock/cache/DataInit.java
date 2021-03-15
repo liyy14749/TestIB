@@ -30,6 +30,9 @@ public class DataInit {
             usContracts.add(JSON.toJSONString(new ContractVO("TSLA","STK","USD","ISLAND", 100001)));
             usContracts.add(JSON.toJSONString(new ContractVO("AAPL","STK","USD","ISLAND",100002)));
             usContracts.add(JSON.toJSONString(new ContractVO("IBM","STK","USD","ISLAND",100004)));
+            usContracts.add(JSON.toJSONString(new ContractVO("WMT","STK","USD","ISLAND",100013)));
+            usContracts.add(JSON.toJSONString(new ContractVO("TSM","STK","USD","ISLAND",100011)));
+            usContracts.add(JSON.toJSONString(new ContractVO("BABA","STK","USD","ISLAND",100010)));
             template.opsForList().leftPushAll(usKey, usContracts);
 
             List<String> hkContracts = new ArrayList<>();

@@ -55,16 +55,13 @@
         </filter>
     </appender>
 
-    
-    <!-- <logger name="com.subscribe.dao.OrderMapper.selectList" level="DEBUG" />
-    <logger name="com.subscribe.dao.OrderReceiptMapper.selectList" level="DEBUG" /> -->
     <logger name="org.mybatis" level="ERROR" />
-    <logger name="com.subscribe.dao" level="DEBUG" additivity="false">
+    <logger name="com.stock.dao" level="DEBUG" additivity="false">
     	<appender-ref ref="sql" />
     </logger>
-    <logger name="com.subscribe.core.aop" level="INFO" />
+    <logger name="com.stock.core.aop" level="INFO" />
     <logger name="org.springframework" level="ERROR" />
-    <logger name="com.subscribe" level="DEBUG" />
+    <logger name="com.stock" level="DEBUG" />
     
     <root level="ERROR">
         <appender-ref ref="console" />
