@@ -6,6 +6,7 @@ import com.stock.vo.TickerVO;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Semaphore;
 
 public class DataCache {
     public static Map<Integer, SymbolData> symbolCache = Collections.synchronizedMap(new LinkedHashMap<>());
@@ -14,6 +15,8 @@ public class DataCache {
 
     public static List<ContractVO> usContracts;
     public static List<ContractVO> hkContracts;
+
+    public static Semaphore semaphore = new Semaphore(3);
 //    static {
 //        usContracts.add(new ContractVO("TSLA","STK","USD","ISLAND", 1));
 //        usContracts.add(new ContractVO("AAPL","STK","USD","ISLAND",2));

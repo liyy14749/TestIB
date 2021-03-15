@@ -6,6 +6,7 @@ package com.stock;
 import com.ib.client.*;
 import com.stock.cache.DataCache;
 import com.stock.core.util.RedisUtil;
+import com.stock.core.util.ThreadPool;
 import com.stock.vo.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,11 +55,50 @@ public class SocketTask {
 				redisUtil.hashPut(key,"symbol",vo.getSymbol());
 				DataCache.symbolCache.put(vo.getSymbolId(), symbolData);
 				subscribeTickData(wrapper.getClient(), contract, vo);
-				subscribeMarketDepth(wrapper.getClient(), contract, vo);
 				realTimeBars(wrapper.getClient(), contract, vo);
 			}
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			log.error("doWork error",e);
+		}
+	}
+
+	private void doWorkDepth(List<ContractVO> contracts){
+		try {
+			Thread.sleep(1000);
+			int len = contracts.size();
+			for(int i=0;i<len;i++){
+				ContractVO vo = contracts.get(i);
+				Contract contract = new Contract();
+				contract.symbol(vo.getSymbol());
+				contract.secType(vo.getSecType());
+				contract.currency(vo.getCurrency());
+				contract.exchange(vo.getExchange());
+				SymbolData symbolData= new SymbolData();
+				symbolData.setContract(vo);
+
+				DataCache.symbolCache.put(vo.getSymbolId(), symbolData);
+				DataCache.semaphore.acquire();
+				ThreadPool.getExecutorService().submit(()->{
+					int tid=0;
+					try {
+						tid = subscribeMarketDepth(wrapper.getClient(), contract, vo);
+						Thread.sleep(2500);
+					} catch (InterruptedException e) {
+						log.error("subscribeMarketDepth error",e);
+					} finally {
+						try {
+							unsubscribeMarketDepth(wrapper.getClient(), tid);
+						} catch (InterruptedException e) {
+						}
+						DataCache.semaphore.release();
+					}
+				});
+				if(i == len - 1){
+					i=0;
+				}
+			}
+		} catch (InterruptedException e) {
+			log.error("doWorkDepth error",e);
 		}
 	}
 
@@ -93,6 +133,7 @@ public class SocketTask {
 			}).start();
 			doWork(DataCache.usContracts);
 			doWork(DataCache.hkContracts);
+			doWorkDepth(DataCache.usContracts);
 		}
 	}
 	/**
@@ -114,11 +155,16 @@ public class SocketTask {
 	 * @param client
 	 * @throws InterruptedException
 	 */
-	private void subscribeMarketDepth(EClientSocket client,Contract contract,ContractVO vo) throws InterruptedException {
+	private int subscribeMarketDepth(EClientSocket client,Contract contract,ContractVO vo) throws InterruptedException {
 		int tid = ++tickerId;
 		DataCache.tickerCache.put(tid,new TickerVO(vo));
 		DataCache.symbolCache.get(vo.getSymbolId()).setMktDepth(new MktDepth());
 		client.reqMktDepth(tid, contract, 20, false, null);
+		return tid;
+	}
+
+	private void unsubscribeMarketDepth(EClientSocket client, int tickerId) throws InterruptedException {
+		client.cancelMktDepth(tickerId, false);
 	}
 
 	private void realTimeBars(EClientSocket client,Contract contract,ContractVO vo) throws InterruptedException {
