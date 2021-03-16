@@ -8,7 +8,7 @@
             <level>debug</level>
         </filter>
         <encoder>
-            <pattern>%date %contextName [%thread] %-5level %logger{36} - %msg%n
+            <pattern>%date %contextName [%thread] %-5level %logger{36} [%line] %msg%n
             </pattern>
         </encoder>
     </appender>
