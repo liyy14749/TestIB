@@ -2,6 +2,7 @@ package com.stock.cache;
 
 import com.alibaba.fastjson.JSON;
 import com.stock.core.util.RedisUtil;
+import com.stock.utils.KeyUtil;
 import com.stock.vo.ContractVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,11 +19,13 @@ public class DataInit {
     private String env;
     @Autowired
     private RedisTemplate<String, String> template;
+    @Autowired
+    private KeyUtil keyUtil;
 
     @PostConstruct
     public void init(){
-        String usKey = "stock_static_symbol_us";
-        String ukKey = "stock_static_symbol_hk";
+        String usKey = keyUtil.getKeyWithPrefix("stock_static_symbol_us");
+        String ukKey = keyUtil.getKeyWithPrefix("stock_static_symbol_hk");
         if(env.equals("dev")){
             template.opsForList().trim(usKey,1,0);
             template.opsForList().trim(ukKey,1,0);

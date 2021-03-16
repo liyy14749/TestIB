@@ -3,6 +3,7 @@ package com.stock.scheduler;//package com.game.card.scheduler;
 import com.alibaba.fastjson.JSON;
 import com.stock.cache.DataCache;
 import com.stock.core.config.PropConfig;
+import com.stock.utils.KeyUtil;
 import com.stock.vo.MktDepth;
 import com.stock.vo.SymbolData;
 import com.stock.vo.redisvo.MktDepthRedis;
@@ -27,7 +28,8 @@ public class MktDepthScheduler {
 
     @Autowired private RedisTemplate<String, String> template;
     @Autowired private PropConfig propConfig;
-
+    @Autowired
+    private KeyUtil keyUtil;
     @Value("${my.schedule.interval.depth}")
     private Long interval;
 
@@ -70,9 +72,8 @@ public class MktDepthScheduler {
                         }
                         rd.setAsk(aa);
                         rd.setBid(bb);
-                        String sb = String.format("depth_%s" ,key);
+                        String sb = keyUtil.getKeyWithPrefix(String.format("depth_%s" ,key));
                         if(aa.size()>0 || bb.size()>0){
-//                            template.opsForZSet().add(sb, JSON.toJSONString(rd), time);
                             template.opsForValue().set(sb, JSON.toJSONString(rd));
                         }
                     }

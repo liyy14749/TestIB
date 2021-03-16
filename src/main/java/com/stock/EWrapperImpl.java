@@ -7,6 +7,7 @@ import com.alibaba.fastjson.JSON;
 import com.ib.client.*;
 import com.stock.cache.DataCache;
 import com.stock.core.util.RedisUtil;
+import com.stock.utils.KeyUtil;
 import com.stock.vo.MktData;
 import com.stock.vo.SymbolData;
 import com.stock.vo.TickerVO;
@@ -34,6 +35,8 @@ public class EWrapperImpl implements EWrapper {
 
     @Autowired private RedisTemplate<String, String> template;
     @Autowired private RedisUtil redisUtil;
+    @Autowired
+    private KeyUtil keyUtil;
     @Value("${spring.profiles.active}")
     private String env;
 
@@ -73,7 +76,7 @@ public class EWrapperImpl implements EWrapper {
         if(price == -1){
             return;
         }
-        String key = String.format("tick_%s_v3",sd.getContract().getSymbolId());
+        String key = keyUtil.getKeyWithPrefix(String.format("tick_%s_v3",sd.getContract().getSymbolId()));
         if (field == 1) {
             redisUtil.hashPut(key,"bid",price);
         } else if (field == 2) {
@@ -120,7 +123,7 @@ public class EWrapperImpl implements EWrapper {
                 deal.setVolume(Integer.parseInt(ss[1]));
                 deal.setTime(time);
                 deal.setMaker(Boolean.parseBoolean(ss[5]));
-                template.opsForZSet().add(String.format("order_%s",symbolId), JSON.toJSONString(deal), time);
+                template.opsForZSet().add(keyUtil.getKeyWithPrefix(String.format("order_%s",symbolId)), JSON.toJSONString(deal), time);
             }
         }
     }
@@ -205,11 +208,11 @@ public class EWrapperImpl implements EWrapper {
         rd.setVolume(volume);
         rd.setTime(time);
         rd.setSymbol(ticker.getContract().getSymbol());
-        String sb = String.format("kline_%s_5sec",ticker.getContract().getSymbolId());
+        String sb = keyUtil.getKeyWithPrefix(String.format("kline_%s_5sec",ticker.getContract().getSymbolId()));
         template.opsForZSet().add(sb, JSON.toJSONString(rd), time);
 
         if(env.equals("dev")){
-            String key = String.format("tick_%s_v3",sd.getContract().getSymbolId());
+            String key = keyUtil.getKeyWithPrefix(String.format("tick_%s_v3",sd.getContract().getSymbolId()));
             redisUtil.hashPut(key,"last_close",open);
             redisUtil.hashPut(key,"open",open);
         }
@@ -457,7 +460,7 @@ public class EWrapperImpl implements EWrapper {
         log.error("Error. Id: " + id + ", Code: " + errorCode + ", Msg: " + errorMsg + "\n");
         if(id == -1 && (errorCode ==2104|| errorCode ==2106|| errorCode==2158)){
             DataCache.SERVER_OK = true;
-        } else if(id == -1 && (errorCode == 504 || errorCode == 507 || errorCode == 502 || errorCode == 1101)){
+        } else if(id == -1 && (errorCode == 504 || errorCode == 507 || errorCode == 502 || errorCode == 1101 || errorCode == 2107 || errorCode == 2108)){
             DataCache.SERVER_OK = false;
             return;
         }

@@ -6,6 +6,7 @@ package com.stock;
 import com.ib.client.*;
 import com.stock.cache.DataCache;
 import com.stock.core.util.RedisUtil;
+import com.stock.utils.KeyUtil;
 import com.stock.vo.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +26,8 @@ public class SocketTask {
 	private Integer port;
 	@Value("${my.ib.server.clientId}")
 	private Integer clientId;
+	@Autowired
+	private KeyUtil keyUtil;
 
 	private static Logger log = LoggerFactory.getLogger(SocketTask.class);
 
@@ -50,7 +53,7 @@ public class SocketTask {
 				SymbolData symbolData= new SymbolData();
 				symbolData.setContract(vo);
 
-				String key = String.format("tick_%s_v3",vo.getSymbolId());
+				String key = keyUtil.getKeyWithPrefix(String.format("tick_%s_v3",vo.getSymbolId()));
 				redisUtil.hashPut(key,"symbol",vo.getSymbol());
 				DataCache.symbolCache.put(vo.getSymbolId(), symbolData);
 				subscribeTickData(wrapper.getClient(), contract, vo);
@@ -77,6 +80,7 @@ public class SocketTask {
 		}).start();
 	}
 	private void reconnect(EClientSocket m_client, EReaderSignal m_signal) {
+		m_client.eDisconnect();
 		m_client.eConnect(ip, port, clientId);
 		final EReader reader = new EReader(m_client, m_signal);
 		if (m_client.isConnected()) {
