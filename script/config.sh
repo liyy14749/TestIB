@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# 载入java等环境变量
+if [ -f "/root/.bash_profile" ]; then
+    source "/root/.bash_profile";
+fi
+
 # 服务名称
 PROJECT_NAME="IBCronServer"
 PROJECT_NAME_JAR="${PROJECT_NAME}.jar"
