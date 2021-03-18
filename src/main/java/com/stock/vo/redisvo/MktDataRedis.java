@@ -6,6 +6,7 @@ import lombok.Data;
 public class MktDataRedis {
     private String symbol;
     private long time;
+    private String date;
     private double bid;//买价格
     private double ask;//卖价格
     private double last;//最新价格

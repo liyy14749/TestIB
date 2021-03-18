@@ -3,6 +3,7 @@
 
 package com.stock;
 
+import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSON;
 import com.ib.client.*;
 import com.stock.cache.DataCache;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -100,6 +102,7 @@ public class EWrapperImpl implements EWrapper {
             redisUtil.hashPut(key,"close",price);
         }
         redisUtil.hashPut(key,"time",System.currentTimeMillis()/1000);
+        redisUtil.hashPut(key,"date",DateUtil.format(new Date(),"yyyy-MM-dd HH:mm:ss"));
     }
     @Override
     public void tickString(int tickerId, int tickType, String value) {
@@ -122,6 +125,7 @@ public class EWrapperImpl implements EWrapper {
                 deal.setPrice(Double.parseDouble(ss[0]));
                 deal.setVolume(Integer.parseInt(ss[1]));
                 deal.setTime(time);
+                deal.setDate(DateUtil.format(new Date(),"yyyy-MM-dd HH:mm:ss"));
                 deal.setMaker(Boolean.parseBoolean(ss[5]));
                 template.opsForZSet().add(keyUtil.getKeyWithPrefix(String.format("order_%s",symbolId)), JSON.toJSONString(deal), time);
             }
@@ -159,6 +163,7 @@ public class EWrapperImpl implements EWrapper {
                 sd.getMktDepth().getBid().remove(position);
             }
         }
+        sd.getMktDepth().setTime(System.currentTimeMillis());
     }
 
     @Override
@@ -207,6 +212,7 @@ public class EWrapperImpl implements EWrapper {
         rd.setLow(low);
         rd.setVolume(volume);
         rd.setTime(time);
+        rd.setDate(DateUtil.format(new Date(),"yyyy-MM-dd HH:mm:ss"));
         rd.setSymbol(ticker.getContract().getSymbol());
         String sb = keyUtil.getKeyWithPrefix(String.format("kline_%s_5sec",ticker.getContract().getSymbolId()));
         template.opsForZSet().add(sb, JSON.toJSONString(rd), time);

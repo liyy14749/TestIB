@@ -1,5 +1,6 @@
 package com.stock.scheduler;//package com.game.card.scheduler;
 
+import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSON;
 import com.stock.cache.DataCache;
 import com.stock.core.config.PropConfig;
@@ -16,10 +17,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 @Component
 public class MktDepthScheduler {
@@ -56,9 +54,13 @@ public class MktDepthScheduler {
                     MktDepth mktData = map.get(key).getMktDepth();
                     if(mktData !=null){
                         long time = System.currentTimeMillis()/1000;
+                        if((System.currentTimeMillis()-mktData.getTime())/1000>3){//3s之内更新过才刷新
+                            continue;
+                        }
                         MktDepthRedis rd = new MktDepthRedis();
                         BeanUtils.copyProperties(mktData, rd);
                         rd.setTime(time);
+                        rd.setDate(DateUtil.format(new Date(),"yyyy-MM-dd HH:mm:ss"));
                         rd.setSymbol(map.get(key).getContract().getSymbol());
                         TreeMap<Integer, Object[]> a = mktData.getAsk();
                         List<Object[]> aa = new ArrayList<>(a.size());

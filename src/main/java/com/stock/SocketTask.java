@@ -132,6 +132,6 @@ public class SocketTask {
 		int tid = ++tickerId;
 		DataCache.tickerCache.put(tid,new TickerVO(vo));
 		DataCache.symbolCache.get(vo.getSymbolId()).setKLineData(new KLineData());
-		client.reqRealTimeBars(tid, contract, 5, "MIDPOINT", true, null);
+		client.reqRealTimeBars(tid, contract, 5, "TRADES", true, null);
 	}
 }

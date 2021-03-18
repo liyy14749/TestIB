@@ -10,6 +10,7 @@ import java.util.List;
 public class MktDepthRedis {
     private String symbol;
     private Long time;
+    private String date;
     private List<Object[]> ask = new ArrayList<>();
     private List<Object[]> bid = new ArrayList<>();
 }
