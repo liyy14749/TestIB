@@ -460,7 +460,7 @@ public class EWrapperImpl implements EWrapper {
         log.error("Error. Id: " + id + ", Code: " + errorCode + ", Msg: " + errorMsg + "\n");
         if(id == -1 && (errorCode ==2104|| errorCode ==2106|| errorCode==2158)){
             DataCache.SERVER_OK = true;
-        } else if(id == -1 && (errorCode == 504 || errorCode == 507 || errorCode == 502 || errorCode == 1101 || errorCode == 2107 || errorCode == 2108)){
+        } else if(id == -1 && (errorCode == 504 || errorCode == 507 || errorCode == 502 || errorCode == 1101)){
             DataCache.SERVER_OK = false;
             return;
         }
