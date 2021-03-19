@@ -36,7 +36,6 @@ public class SocketTask {
 	public void start(){
 		final EClientSocket m_client = wrapper.getClient();
 		final EReaderSignal m_signal = wrapper.getSignal();
-		reconnect(m_client, m_signal);
 		reconnectThreadRun(m_client, m_signal);
 	}
 
@@ -67,13 +66,22 @@ public class SocketTask {
 	private void reconnectThreadRun(final EClientSocket m_client, final EReaderSignal m_signal){
 		new Thread(() -> {
 			while (true) {
-				try {
-					Thread.sleep(5000);
-				} catch (InterruptedException e) {
-				}
 				if (!DataCache.SERVER_OK) {
 					log.info("reconnect");
 					reconnect(m_client, m_signal);
+					try {
+						Thread.sleep(4000);
+					} catch (InterruptedException e) {
+					}
+					if(DataCache.SERVER_OK){
+						doWork(DataCache.usContracts);
+						doWork(DataCache.hkContracts);
+					}
+				} else {
+					try {
+						Thread.sleep(5000);
+					} catch (InterruptedException e) {
+					}
 				}
 			}
 		}).start();
@@ -98,8 +106,6 @@ public class SocketTask {
 					}
 				}
 			}).start();
-			doWork(DataCache.usContracts);
-			doWork(DataCache.hkContracts);
 		}
 	}
 	/**
