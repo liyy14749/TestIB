@@ -135,6 +135,25 @@ public class EWrapperImpl implements EWrapper {
     @Override
     public void tickSize(int tickerId, int field, int size) {
         log.debug("tick Size. Ticker Id:" + tickerId + ", Field: " + field + ", Size: " + size);
+        TickerVO ticker = DataCache.tickerCache.get(tickerId);
+        if (ticker == null) {
+            return;
+        }
+        SymbolData sd = DataCache.symbolCache.get(ticker.getContract().getSymbolId());
+        if (sd == null || sd.getMktData() == null) {
+            return;
+        }
+        if(size == -1){
+            return;
+        }
+        String key = keyUtil.getKeyWithPrefix(String.format("tick_%s_v3",sd.getContract().getSymbolId()));
+        if (field == 0){
+            redisUtil.hashPut(key,"ask_size",size);
+        } else if (field == 3) {
+            redisUtil.hashPut(key,"bid_size",size);
+        }
+        redisUtil.hashPut(key,"time",System.currentTimeMillis()/1000);
+        redisUtil.hashPut(key,"date",DateUtil.format(new Date(),"yyyy-MM-dd HH:mm:ss"));
     }
 
     @Override
