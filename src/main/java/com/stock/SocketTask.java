@@ -76,6 +76,7 @@ public class SocketTask {
 					if(DataCache.SERVER_OK){
 						doWork(DataCache.usContracts);
 						doWork(DataCache.hkContracts);
+						doWork(DataCache.indContracts);
 					}
 				} else {
 					try {

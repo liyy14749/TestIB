@@ -26,9 +26,12 @@ public class DataInit {
     public void init(){
         String usKey = keyUtil.getKeyWithPrefix("stock_static_symbol_us");
         String ukKey = keyUtil.getKeyWithPrefix("stock_static_symbol_hk");
+        String indKey = keyUtil.getKeyWithPrefix("stock_static_symbol_ind");
         if(env.equals("dev")){
-            template.opsForList().trim(usKey,1,0);
             template.opsForList().trim(ukKey,1,0);
+            template.opsForList().trim(usKey,1,0);
+            template.opsForList().trim(indKey,1,0);
+
             List<String> usContracts = new ArrayList<>();
             usContracts.add(JSON.toJSONString(new ContractVO("TSLA","STK","USD","ISLAND", 100001)));
             usContracts.add(JSON.toJSONString(new ContractVO("AAPL","STK","USD","ISLAND",100002)));
@@ -43,19 +46,25 @@ public class DataInit {
             hkContracts.add(JSON.toJSONString(new ContractVO("939","STK","HKD","SEHK",100005)));
             hkContracts.add(JSON.toJSONString(new ContractVO("1810","STK","HKD","SEHK",100006)));
             template.opsForList().leftPushAll(ukKey, hkContracts);
+
+            List<String> indContracts = new ArrayList<>();
+            indContracts.add(JSON.toJSONString(new ContractVO("INDU","IND","USD","CME",1)));
+            indContracts.add(JSON.toJSONString(new ContractVO("NDX","IND","USD","NASDAQ",2)));
+            indContracts.add(JSON.toJSONString(new ContractVO("SPX","IND","USD","CBOE",3)));
+            template.opsForList().leftPushAll(indKey, indContracts);
         }
 
-        List<String> us = template.opsForList().range(usKey,0,-1);
-        List<ContractVO> usList= new ArrayList<>();
-        for(String u:us){
-            usList.add(JSON.parseObject(u,ContractVO.class));
+        DataCache.usContracts = initCache(usKey);
+        DataCache.hkContracts = initCache(ukKey);
+        DataCache.indContracts = initCache(indKey);
+    }
+
+    private List<ContractVO> initCache(String indKey) {
+        List<ContractVO> indList= new ArrayList<>();
+        List<String> ind = template.opsForList().range(indKey,0,-1);
+        for(String h:ind){
+            indList.add(JSON.parseObject(h,ContractVO.class));
         }
-        DataCache.usContracts = usList;
-        List<ContractVO> hkList= new ArrayList<>();
-        List<String> hk = template.opsForList().range(ukKey,0,-1);
-        for(String h:hk){
-            usList.add(JSON.parseObject(h,ContractVO.class));
-        }
-        DataCache.hkContracts = hkList;
+        return indList;
     }
 }
