@@ -80,8 +80,14 @@ public class EWrapperImpl implements EWrapper {
         }
         String key = keyUtil.getKeyWithPrefix(String.format("tick_%s_v3",sd.getContract().getSymbolId()));
         if (field == 1) {
+            if(sd.getContract().getSecType().equals("IND")){
+                return;
+            }
             redisUtil.hashPut(key,"bid",price);
         } else if (field == 2) {
+            if(sd.getContract().getSecType().equals("IND")){
+                return;
+            }
             redisUtil.hashPut(key,"ask",price);
         } else if (field == 4) {
             redisUtil.hashPut(key,"last",price);
@@ -147,6 +153,9 @@ public class EWrapperImpl implements EWrapper {
             return;
         }
         String key = keyUtil.getKeyWithPrefix(String.format("tick_%s_v3",sd.getContract().getSymbolId()));
+        if(sd.getContract().getSecType().equals("IND")){
+            return;
+        }
         if (field == 0){
             redisUtil.hashPut(key,"ask_size",size);
         } else if (field == 3) {
