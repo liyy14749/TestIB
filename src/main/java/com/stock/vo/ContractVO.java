@@ -1,5 +1,6 @@
 package com.stock.vo;
 
+import com.ib.client.Contract;
 import lombok.Data;
 
 @Data
@@ -10,6 +11,7 @@ public class ContractVO {
     private String exchange;
     private Integer symbolId;
     private String primaryExch;
+    private Contract contract;
 
     public ContractVO(String symbol, String secType, String currency, String exchange, Integer symbolId) {
         this.symbol = symbol;

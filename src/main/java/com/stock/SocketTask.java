@@ -3,8 +3,11 @@
 
 package com.stock;
 
+import cn.hutool.core.date.DateUtil;
 import com.ib.client.*;
 import com.stock.cache.DataCache;
+import com.stock.cache.LastData;
+import com.stock.core.util.DateTimeUtil;
 import com.stock.core.util.RedisUtil;
 import com.stock.utils.KeyUtil;
 import com.stock.vo.*;
@@ -48,15 +51,17 @@ public class SocketTask {
 				contract.secType(vo.getSecType());
 				contract.currency(vo.getCurrency());
 				contract.exchange(vo.getExchange());
+				vo.setContract(contract);
 				SymbolData symbolData= new SymbolData();
 				symbolData.setContract(vo);
 
 				String key = keyUtil.getKeyWithPrefix(String.format("tick_%s_v3",vo.getSymbolId()));
 				redisUtil.hashPut(key,"symbol",vo.getSymbol());
 				DataCache.symbolCache.put(vo.getSymbolId(), symbolData);
-				subscribeTickData(wrapper.getClient(), contract, vo);
-				subscribeMarketDepth(wrapper.getClient(), contract, vo);
-				realTimeBars(wrapper.getClient(), contract, vo);
+				subscribeTickData(wrapper.getClient(), vo);
+				subscribeMarketDepth(wrapper.getClient(), vo);
+				realTimeBars(wrapper.getClient(), vo);
+				DataCache.lastDataTime.get(DataCache.klineType).setStartTime(System.currentTimeMillis());
 			}
 		} catch (InterruptedException e) {
 			e.printStackTrace();
@@ -79,6 +84,16 @@ public class SocketTask {
 						doWork(DataCache.indContracts);
 					}
 				} else {
+					LastData lastData = DataCache.lastDataTime.get(DataCache.klineType);
+					if(lastData.getStartTime()>0 && (System.currentTimeMillis()-lastData.getStartTime())/1000>10){
+						if(DataCache.SERVER_OK && (System.currentTimeMillis()-lastData.getLastTime())/1000>=12){
+							if(isTimePeriod()){
+								log.info("kline no data reconnect");
+								DataCache.SERVER_OK = false;
+								continue;
+							}
+						}
+					}
 					try {
 						Thread.sleep(5000);
 					} catch (InterruptedException e) {
@@ -87,6 +102,28 @@ public class SocketTask {
 			}
 		}).start();
 	}
+	private boolean isTimePeriod(){
+		boolean flag = false;
+		int hour = DateUtil.thisHour(true);
+		int minute = DateUtil.thisMinute();
+		if(hour==9){
+			if(minute>=29 && minute<=31){
+				flag = true;
+			}
+		} else if((hour==13&&minute==0)||(hour==12&&minute==59)||(hour==13&&minute==1)){
+			flag = true;
+		} else if(hour==21){
+			if(minute>=29 && minute<=31){
+				flag = true;
+			}
+		} else if(hour==22){
+			if(minute>=29 && minute<=31){
+				flag = true;
+			}
+		}
+		return flag;
+	}
+
 	private void reconnect(EClientSocket m_client, EReaderSignal m_signal) {
 		m_client.eDisconnect();
 		try {
@@ -115,11 +152,11 @@ public class SocketTask {
 	 * @param client
 	 * @throws InterruptedException
 	 */
-	private void subscribeTickData(EClientSocket client,Contract contract,ContractVO vo) throws InterruptedException {
+	private void subscribeTickData(EClientSocket client,ContractVO vo) throws InterruptedException {
 		int tid = ++tickerId;
-		DataCache.tickerCache.put(tid,new TickerVO(vo));
+		DataCache.tickerCache.put(tid,new TickerVO(vo,1));
 		DataCache.symbolCache.get(vo.getSymbolId()).setMktData(new MktData());
-		client.reqMktData(tid, contract, "233", false, false, null);
+		client.reqMktData(tid, vo.getContract(), "233", false, false, null);
 	}
 
 	/**
@@ -128,17 +165,18 @@ public class SocketTask {
 	 * @param client
 	 * @throws InterruptedException
 	 */
-	private void subscribeMarketDepth(EClientSocket client,Contract contract,ContractVO vo) throws InterruptedException {
+	private void subscribeMarketDepth(EClientSocket client,ContractVO vo) throws InterruptedException {
 		int tid = ++tickerId;
-		DataCache.tickerCache.put(tid,new TickerVO(vo));
+		DataCache.tickerCache.put(tid,new TickerVO(vo,2));
 		DataCache.symbolCache.get(vo.getSymbolId()).setMktDepth(new MktDepth());
-		client.reqMktDepth(tid, contract, 20, false, null);
+		client.reqMktDepth(tid, vo.getContract(), 20, false, null);
 	}
 
-	private void realTimeBars(EClientSocket client,Contract contract,ContractVO vo) throws InterruptedException {
+	public void realTimeBars(EClientSocket client,ContractVO vo) throws InterruptedException {
 		int tid = ++tickerId;
-		DataCache.tickerCache.put(tid,new TickerVO(vo));
+		DataCache.tickerCache.put(tid,new TickerVO(vo,3));
 		DataCache.symbolCache.get(vo.getSymbolId()).setKLineData(new KLineData());
-		client.reqRealTimeBars(tid, contract, 5, "TRADES", true, null);
+		client.reqRealTimeBars(tid, vo.getContract(), 5, "TRADES", true, null);
 	}
+
 }

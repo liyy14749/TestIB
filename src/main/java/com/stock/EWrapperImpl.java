@@ -225,6 +225,7 @@ public class EWrapperImpl implements EWrapper {
     public void realtimeBar(int reqId, long time, double open, double high,
                             double low, double close, long volume, double wap, int count) {
         log.debug("kline. " + reqId + " - Time: " + time + ", Open: " + open + ", High: " + high + ", Low: " + low + ", Close: " + close + ", Volume: " + volume + ", Count: " + count + ", WAP: " + wap);
+        DataCache.lastDataTime.get(DataCache.klineType).setLastTime(System.currentTimeMillis());
         TickerVO ticker = DataCache.tickerCache.get(reqId);
         if (ticker == null) {
             return;
