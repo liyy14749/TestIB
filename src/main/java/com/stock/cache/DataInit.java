@@ -1,9 +1,12 @@
 package com.stock.cache;
 
 import com.alibaba.fastjson.JSON;
+import com.stock.SocketTask;
 import com.stock.core.util.RedisUtil;
 import com.stock.utils.KeyUtil;
 import com.stock.vo.ContractVO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -15,6 +18,7 @@ import java.util.List;
 
 @Component
 public class DataInit {
+    private static Logger log = LoggerFactory.getLogger(DataInit.class);
     @Value("${spring.profiles.active}")
     private String env;
     @Autowired
@@ -62,8 +66,12 @@ public class DataInit {
     private List<ContractVO> initCache(String indKey) {
         List<ContractVO> indList= new ArrayList<>();
         List<String> ind = template.opsForList().range(indKey,0,-1);
-        for(String h:ind){
-            indList.add(JSON.parseObject(h,ContractVO.class));
+        if(ind!=null && ind.size()>0){
+            for(String h:ind){
+                indList.add(JSON.parseObject(h,ContractVO.class));
+            }
+        } else {
+            log.warn(String.format("redis key %s is empty" , indKey));
         }
         return indList;
     }
