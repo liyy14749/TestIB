@@ -31,7 +31,7 @@ CLIENT_PORT="7496"
 if [ "$1" == "-prod" ]; then
   ACTIVE="prod"
   CLIENT_HOST="10.0.2.25"
-  CLIENT_PORT="4001"
+  CLIENT_PORT="40001"
 elif [ "$1" == "-test" ]; then
   ACTIVE="test"
 fi
