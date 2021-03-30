@@ -1,5 +1,5 @@
 #!/bin/bash
 
-source ./stop.sh $1 $2
+bash ./stop.sh $1 $2
 
-source ./start.sh $1 $2
+bash ./start.sh $1 $2
