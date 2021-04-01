@@ -12,6 +12,8 @@ public class KeyUtil {
     public String getKeyWithPrefix(String key){
         if(env.equals("test")){
             return String.format("test_%s",key);
+        } else if(env.equals("pre")){
+            return String.format("pre_%s",key);
         }
         return key;
     }
