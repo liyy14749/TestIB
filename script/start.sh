@@ -9,7 +9,7 @@ if [ $num -gt 0 ]; then
 else
   echo "[${CUR_TIME}]-${PROJECT_NAME_JAR}: start to running." >> "${PROJECT_CONSOLE_LOG_PATH}/${ACTIVE}.${PROJECT_NAME}.log"
 
-  time_hour=$(date "+%Y%m%d%H");
+  time_hour=$(date "+%Y%m%d%H%M");
   log_path="${PROJECT_CONSOLE_LOG_PATH}/${ACTIVE}.console.${time_hour}.log"
   nohup java -jar ${PROJECT_NAME_JAR} --spring.profiles.active=${ACTIVE} --my.ib.server.clientId=${CLIENT_ID} >> ${log_path} 2>&1 &
   sleep 3
