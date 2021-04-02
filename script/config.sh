@@ -25,13 +25,17 @@ fi
 
 # 启动环境，默认dev
 ACTIVE="dev"
+CLIENT_ID="7777"
 if [ "$1" == "-prod" ]; then
   ACTIVE="prod"
+  CLIENT_ID="70001"
 elif [ "$1" == "-pre" ]; then
   ACTIVE="pre"
+  CLIENT_ID="10001"
 elif [ "$1" == "-test" ]; then
   ACTIVE="test"
 fi
 
 echo "ACTIVE: ${ACTIVE}"
+echo "CLIENT_ID: ${CLIENT_ID}"
 
