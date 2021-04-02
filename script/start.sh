@@ -1,9 +1,9 @@
 #!/bin/bash
 
-source ./config.sh $1 $2 $3 $4
+source ./config.sh $1
 
 # 启动服务
-num=$(ps -ef | grep "${PROJECT_NAME_JAR}" | grep "${ACTIVE}" | grep "${CLIENT_ID}" | grep -v "grep" | wc -l)
+num=$(ps -ef | grep "${PROJECT_NAME_JAR}" | grep "${ACTIVE}" | grep -v "grep" | wc -l)
 if [ $num -gt 0 ]; then
   echo "[${CUR_TIME}]-${PROJECT_NAME_JAR}: is running." >> "${PROJECT_CONSOLE_LOG_PATH}/${PROJECT_NAME}.log"
 else
@@ -11,7 +11,7 @@ else
 
   time_hour=$(date "+%Y%m%d%H");
   log_path="${PROJECT_CONSOLE_LOG_PATH}/console.${time_hour}.log"
-  nohup java -jar ${PROJECT_NAME_JAR} --spring.profiles.active=${ACTIVE} --my.ib.server.clientId=${CLIENT_ID} --my.ib.server.host=${CLIENT_HOST} --my.ib.server.port=${CLIENT_PORT} >> ${log_path} 2>&1 &
+  nohup java -jar ${PROJECT_NAME_JAR} --spring.profiles.active=${ACTIVE} >> ${log_path} 2>&1 &
   sleep 3
   tail -n 50 ${log_path}
 fi
