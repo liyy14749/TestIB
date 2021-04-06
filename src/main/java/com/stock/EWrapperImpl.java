@@ -92,11 +92,13 @@ public class EWrapperImpl implements EWrapper {
                 return;
             }
             redisUtil.hashPut(key,"bid",price);
+            updateTickDate(key);
         } else if (field == 2) {
             if(contractVO.getSecType().equals("IND")){
                 return;
             }
             redisUtil.hashPut(key,"ask",price);
+            updateTickDate(key);
         } else if (field == 4) {
 //            redisUtil.hashPut(key,"last",price);
 //            redisUtil.hashPut(key,"close",price);
@@ -115,7 +117,6 @@ public class EWrapperImpl implements EWrapper {
             //redisUtil.hashPut(key,"close",price);
         }
 //        redisUtil.hashPut(key,"time",System.currentTimeMillis()/1000);
-        redisUtil.hashPut(key,"tick_date",DateUtil.format(new Date(),"yyyy-MM-dd HH:mm:ss"));
     }
 
     @Override
@@ -158,11 +159,16 @@ public class EWrapperImpl implements EWrapper {
         if (ticker == null) {
             return;
         }
-        SymbolData sd = DataCache.symbolCache.get(ticker.getContract().getSymbolId());
+        ContractVO contractVO = ticker.getContract();
+        SymbolData sd = DataCache.symbolCache.get(contractVO.getSymbolId());
         if (sd == null || sd.getMktData() == null) {
             return;
         }
         if(size == -1){
+            return;
+        }
+        // 在合规的时间，才更新redis
+        if(!CommonUtil.isValidTime(contractVO)){
             return;
         }
         String key = keyUtil.getKeyWithPrefix(String.format("tick_%s_v3",sd.getContract().getSymbolId()));
@@ -171,11 +177,16 @@ public class EWrapperImpl implements EWrapper {
         }
         if (field == 0){
             redisUtil.hashPut(key,"ask_size",size);
+            updateTickDate(key);
         } else if (field == 3) {
             redisUtil.hashPut(key,"bid_size",size);
+            updateTickDate(key);
         }
 //        redisUtil.hashPut(key,"time",System.currentTimeMillis()/1000);
-        redisUtil.hashPut(key,"tick_date",DateUtil.format(new Date(),"yyyy-MM-dd HH:mm:ss"));
+    }
+
+    private void updateTickDate(String key) {
+        redisUtil.hashPut(key, "tick_date", DateUtil.format(new Date(), "yyyy-MM-dd HH:mm:ss"));
     }
 
     @Override
