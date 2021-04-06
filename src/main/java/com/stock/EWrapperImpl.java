@@ -125,10 +125,15 @@ public class EWrapperImpl implements EWrapper {
         if (ticker == null) {
             return;
         }
-        Integer symbolId = ticker.getContract().getSymbolId();
+        ContractVO contractVO = ticker.getContract();
+        Integer symbolId = contractVO.getSymbolId();
         SymbolData sd = DataCache.symbolCache.get(symbolId);
         MktData mktData = sd.getMktData();
         if (sd == null || mktData == null) {
+            return;
+        }
+        // 在合规的时间，才更新redis
+        if(!CommonUtil.isValidTime(contractVO)){
             return;
         }
         if (tickType == 48 && StringUtils.isNotBlank(value)) {
