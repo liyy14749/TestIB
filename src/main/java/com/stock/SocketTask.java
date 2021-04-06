@@ -6,6 +6,7 @@ package com.stock;
 import cn.hutool.core.date.DateUtil;
 import com.ib.client.*;
 import com.stock.cache.DataCache;
+import com.stock.cache.DataInit;
 import com.stock.cache.LastData;
 import com.stock.core.util.DateTimeUtil;
 import com.stock.core.util.RedisUtil;
@@ -29,8 +30,8 @@ public class SocketTask {
 	private Integer port;
 	@Value("${my.ib.server.clientId}")
 	private Integer clientId;
-	@Autowired
-	private KeyUtil keyUtil;
+	@Autowired private KeyUtil keyUtil;
+	@Autowired private DataInit dataInit;
 
 	private static Logger log = LoggerFactory.getLogger(SocketTask.class);
 
@@ -86,8 +87,9 @@ public class SocketTask {
 				} else {
 					LastData lastData = DataCache.lastDataTime.get(DataCache.klineType);
 					if(lastData.getStartTime()>0 && (System.currentTimeMillis()-lastData.getStartTime())/1000>10){
-						if(DataCache.SERVER_OK && (System.currentTimeMillis()-lastData.getLastTime())/1000>=12){
+						if(DataCache.SERVER_OK && (System.currentTimeMillis()-lastData.getLastTime())/1000>=15){
 							if(isTimePeriod()){
+								dataInit.reloadRedis();
 								log.info("kline no data reconnect");
 								DataCache.SERVER_OK = false;
 								continue;

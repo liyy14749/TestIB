@@ -1,8 +1,6 @@
 package com.stock.cache;
 
 import com.alibaba.fastjson.JSON;
-import com.stock.SocketTask;
-import com.stock.core.util.RedisUtil;
 import com.stock.utils.KeyUtil;
 import com.stock.vo.ContractVO;
 import org.slf4j.Logger;
@@ -25,9 +23,21 @@ public class DataInit {
     private RedisTemplate<String, String> template;
     @Autowired
     private KeyUtil keyUtil;
+    private long lastLoadTime = 0;
 
     @PostConstruct
     public void init(){
+        readRedis();
+    }
+
+    public void reloadRedis(){
+        if((System.currentTimeMillis() - lastLoadTime)/1000 >= 3600){
+            readRedis();
+            lastLoadTime = System.currentTimeMillis();
+        }
+    }
+
+    public void readRedis(){
         String usKey = keyUtil.getKeyWithPrefix("stock_static_symbol_us");
         String ukKey = keyUtil.getKeyWithPrefix("stock_static_symbol_hk");
         String indKey = keyUtil.getKeyWithPrefix("stock_static_symbol_ind");

@@ -8,7 +8,9 @@ import com.alibaba.fastjson.JSON;
 import com.ib.client.*;
 import com.stock.cache.DataCache;
 import com.stock.core.util.RedisUtil;
+import com.stock.utils.CommonUtil;
 import com.stock.utils.KeyUtil;
+import com.stock.vo.ContractVO;
 import com.stock.vo.MktData;
 import com.stock.vo.SymbolData;
 import com.stock.vo.TickerVO;
@@ -22,7 +24,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.List;
@@ -78,38 +79,45 @@ public class EWrapperImpl implements EWrapper {
         if(price == -1){
             return;
         }
-        String key = keyUtil.getKeyWithPrefix(String.format("tick_%s_v3",sd.getContract().getSymbolId()));
+        ContractVO contractVO = sd.getContract();
+        String key = keyUtil.getKeyWithPrefix(String.format("tick_%s_v3", contractVO.getSymbolId()));
+
+        // 在合规的时间，才更新redis
+        if(!CommonUtil.isValidTime(contractVO)){
+            return;
+        }
+
         if (field == 1) {
-            if(sd.getContract().getSecType().equals("IND")){
+            if(contractVO.getSecType().equals("IND")){
                 return;
             }
             redisUtil.hashPut(key,"bid",price);
         } else if (field == 2) {
-            if(sd.getContract().getSecType().equals("IND")){
+            if(contractVO.getSecType().equals("IND")){
                 return;
             }
             redisUtil.hashPut(key,"ask",price);
         } else if (field == 4) {
-            redisUtil.hashPut(key,"last",price);
-            redisUtil.hashPut(key,"close",price);
-            String lastClose = redisUtil.hashGet(key,"last_close");
-            if(lastClose!=null){
-                BigDecimal price_change = new BigDecimal(String.valueOf(price)).subtract(new BigDecimal(lastClose));
-                redisUtil.hashPut(key,"price_change", price_change);
-                BigDecimal percent = price_change.divide(new BigDecimal(lastClose) ,5 ,BigDecimal.ROUND_FLOOR);
-                redisUtil.hashPut(key,"price_change_percent", percent);
-
-            }
+//            redisUtil.hashPut(key,"last",price);
+//            redisUtil.hashPut(key,"close",price);
+//            String lastClose = redisUtil.hashGet(key,"last_close");
+//            if(lastClose!=null){
+//                BigDecimal price_change = new BigDecimal(String.valueOf(price)).subtract(new BigDecimal(lastClose));
+//                redisUtil.hashPut(key,"price_change", price_change);
+//                BigDecimal percent = price_change.divide(new BigDecimal(lastClose) ,5 ,BigDecimal.ROUND_FLOOR);
+//                redisUtil.hashPut(key,"price_change_percent", percent);
+//            }
         } else if (field == 6) {
-            redisUtil.hashPut(key,"high",price);
+            //redisUtil.hashPut(key,"high",price);
         } else if (field == 7) {
-            redisUtil.hashPut(key,"low",price);
+            //redisUtil.hashPut(key,"low",price);
         } else if (field == 9) {
-            redisUtil.hashPut(key,"close",price);
+            //redisUtil.hashPut(key,"close",price);
         }
-        redisUtil.hashPut(key,"time",System.currentTimeMillis()/1000);
-        redisUtil.hashPut(key,"date",DateUtil.format(new Date(),"yyyy-MM-dd HH:mm:ss"));
+//        redisUtil.hashPut(key,"time",System.currentTimeMillis()/1000);
+        redisUtil.hashPut(key,"tick_date",DateUtil.format(new Date(),"yyyy-MM-dd HH:mm:ss"));
     }
+
     @Override
     public void tickString(int tickerId, int tickType, String value) {
         log.debug("tick string. Ticker Id:" + tickerId + ", Type: " + tickType + ", Value: " + value);
@@ -161,8 +169,8 @@ public class EWrapperImpl implements EWrapper {
         } else if (field == 3) {
             redisUtil.hashPut(key,"bid_size",size);
         }
-        redisUtil.hashPut(key,"time",System.currentTimeMillis()/1000);
-        redisUtil.hashPut(key,"date",DateUtil.format(new Date(),"yyyy-MM-dd HH:mm:ss"));
+//        redisUtil.hashPut(key,"time",System.currentTimeMillis()/1000);
+        redisUtil.hashPut(key,"tick_date",DateUtil.format(new Date(),"yyyy-MM-dd HH:mm:ss"));
     }
 
     @Override
@@ -495,7 +503,7 @@ public class EWrapperImpl implements EWrapper {
         log.error("Error. Id: " + id + ", Code: " + errorCode + ", Msg: " + errorMsg + "\n");
         if(id == -1 && (errorCode ==2104|| errorCode ==2106|| errorCode==2158)){
             DataCache.SERVER_OK = true;
-        } else if(id == -1 && (errorCode == 504 || errorCode == 507 || errorCode == 502 || errorCode == 1101)){
+        } else if(id == -1 && (errorCode == 1300 || errorCode == 504 || errorCode == 507 || errorCode == 502 || errorCode == 1101)){
             DataCache.SERVER_OK = false;
             return;
         }
