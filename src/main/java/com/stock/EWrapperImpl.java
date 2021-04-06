@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.List;
@@ -98,24 +99,25 @@ public class EWrapperImpl implements EWrapper {
             }
             redisUtil.hashPut(key,"ask",price);
         } else if (field == 4) {
-//            redisUtil.hashPut(key,"last",price);
-//            redisUtil.hashPut(key,"close",price);
-//            String lastClose = redisUtil.hashGet(key,"last_close");
-//            if(lastClose!=null){
-//                BigDecimal price_change = new BigDecimal(String.valueOf(price)).subtract(new BigDecimal(lastClose));
-//                redisUtil.hashPut(key,"price_change", price_change);
-//                BigDecimal percent = price_change.divide(new BigDecimal(lastClose) ,5 ,BigDecimal.ROUND_FLOOR);
-//                redisUtil.hashPut(key,"price_change_percent", percent);
-//            }
+            redisUtil.hashPut(key,"last",price);
+            redisUtil.hashPut(key,"close",price);
+            String lastClose = redisUtil.hashGet(key,"last_close");
+            if(lastClose!=null){
+                BigDecimal price_change = new BigDecimal(String.valueOf(price)).subtract(new BigDecimal(lastClose));
+                redisUtil.hashPut(key,"price_change", price_change);
+                BigDecimal percent = price_change.divide(new BigDecimal(lastClose) ,5 ,BigDecimal.ROUND_FLOOR);
+                redisUtil.hashPut(key,"price_change_percent", percent);
+            }
         } else if (field == 6) {
-            //redisUtil.hashPut(key,"high",price);
+            redisUtil.hashPut(key,"high",price);
         } else if (field == 7) {
-            //redisUtil.hashPut(key,"low",price);
+            redisUtil.hashPut(key,"low",price);
         } else if (field == 9) {
-            //redisUtil.hashPut(key,"close",price);
+            redisUtil.hashPut(key,"close",price);
+            redisUtil.hashPut(key,"close_at",DateUtil.format(new Date(),"yyyy-MM-dd HH:mm:ss"));
         }
-//        redisUtil.hashPut(key,"time",System.currentTimeMillis()/1000);
-        redisUtil.hashPut(key,"tick_date",DateUtil.format(new Date(),"yyyy-MM-dd HH:mm:ss"));
+        redisUtil.hashPut(key,"time",System.currentTimeMillis()/1000);
+        redisUtil.hashPut(key,"date",DateUtil.format(new Date(),"yyyy-MM-dd HH:mm:ss"));
     }
 
     @Override
@@ -174,8 +176,8 @@ public class EWrapperImpl implements EWrapper {
         } else if (field == 3) {
             redisUtil.hashPut(key,"bid_size",size);
         }
-//        redisUtil.hashPut(key,"time",System.currentTimeMillis()/1000);
-        redisUtil.hashPut(key,"tick_date",DateUtil.format(new Date(),"yyyy-MM-dd HH:mm:ss"));
+        redisUtil.hashPut(key,"time",System.currentTimeMillis()/1000);
+        redisUtil.hashPut(key,"date",DateUtil.format(new Date(),"yyyy-MM-dd HH:mm:ss"));
     }
 
     @Override
