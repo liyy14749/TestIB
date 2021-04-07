@@ -87,6 +87,7 @@ public class EWrapperImpl implements EWrapper {
         if(!CommonUtil.isValidTime(contractVO)){
             return;
         }
+        log.info("contractVO -- " + contractVO);
 
         if (field == 1) {
             if(contractVO.getSecType().equals("IND")){
