@@ -21,6 +21,9 @@ public class ContractVO {
     private String dateFrom;
     private String dateTo;
 
+    public ContractVO() {
+    }
+
     public ContractVO(String symbol, String secType, String currency, String exchange, Integer symbolId) {
         this.symbol = symbol;
         this.secType = secType;
