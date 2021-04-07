@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.List;
@@ -92,31 +93,31 @@ public class EWrapperImpl implements EWrapper {
                 return;
             }
             redisUtil.hashPut(key,"bid",price);
-            updateTickDate(key);
         } else if (field == 2) {
             if(contractVO.getSecType().equals("IND")){
                 return;
             }
             redisUtil.hashPut(key,"ask",price);
-            updateTickDate(key);
         } else if (field == 4) {
-//            redisUtil.hashPut(key,"last",price);
-//            redisUtil.hashPut(key,"close",price);
-//            String lastClose = redisUtil.hashGet(key,"last_close");
-//            if(lastClose!=null){
-//                BigDecimal price_change = new BigDecimal(String.valueOf(price)).subtract(new BigDecimal(lastClose));
-//                redisUtil.hashPut(key,"price_change", price_change);
-//                BigDecimal percent = price_change.divide(new BigDecimal(lastClose) ,5 ,BigDecimal.ROUND_FLOOR);
-//                redisUtil.hashPut(key,"price_change_percent", percent);
-//            }
+            redisUtil.hashPut(key,"last",price);
+            redisUtil.hashPut(key,"close",price);
+            String lastClose = redisUtil.hashGet(key,"last_close");
+            if(lastClose!=null){
+                BigDecimal price_change = new BigDecimal(String.valueOf(price)).subtract(new BigDecimal(lastClose));
+                redisUtil.hashPut(key,"price_change", price_change);
+                BigDecimal percent = price_change.divide(new BigDecimal(lastClose) ,5 ,BigDecimal.ROUND_FLOOR);
+                redisUtil.hashPut(key,"price_change_percent", percent);
+            }
         } else if (field == 6) {
-            //redisUtil.hashPut(key,"high",price);
+            redisUtil.hashPut(key,"high",price);
         } else if (field == 7) {
-            //redisUtil.hashPut(key,"low",price);
+            redisUtil.hashPut(key,"low",price);
         } else if (field == 9) {
-            //redisUtil.hashPut(key,"close",price);
+            redisUtil.hashPut(key,"close",price);
+            redisUtil.hashPut(key,"close_at",DateUtil.format(new Date(),"yyyy-MM-dd HH:mm:ss"));
         }
-//        redisUtil.hashPut(key,"time",System.currentTimeMillis()/1000);
+        redisUtil.hashPut(key,"time",System.currentTimeMillis()/1000);
+        redisUtil.hashPut(key,"date",DateUtil.format(new Date(),"yyyy-MM-dd HH:mm:ss"));
     }
 
     @Override
@@ -159,16 +160,11 @@ public class EWrapperImpl implements EWrapper {
         if (ticker == null) {
             return;
         }
-        ContractVO contractVO = ticker.getContract();
-        SymbolData sd = DataCache.symbolCache.get(contractVO.getSymbolId());
+        SymbolData sd = DataCache.symbolCache.get(ticker.getContract().getSymbolId());
         if (sd == null || sd.getMktData() == null) {
             return;
         }
         if(size == -1){
-            return;
-        }
-        // 在合规的时间，才更新redis
-        if(!CommonUtil.isValidTime(contractVO)){
             return;
         }
         String key = keyUtil.getKeyWithPrefix(String.format("tick_%s_v3",sd.getContract().getSymbolId()));
@@ -177,16 +173,11 @@ public class EWrapperImpl implements EWrapper {
         }
         if (field == 0){
             redisUtil.hashPut(key,"ask_size",size);
-            updateTickDate(key);
         } else if (field == 3) {
             redisUtil.hashPut(key,"bid_size",size);
-            updateTickDate(key);
         }
-//        redisUtil.hashPut(key,"time",System.currentTimeMillis()/1000);
-    }
-
-    private void updateTickDate(String key) {
-        redisUtil.hashPut(key, "tick_date", DateUtil.format(new Date(), "yyyy-MM-dd HH:mm:ss"));
+        redisUtil.hashPut(key,"time",System.currentTimeMillis()/1000);
+        redisUtil.hashPut(key,"date",DateUtil.format(new Date(),"yyyy-MM-dd HH:mm:ss"));
     }
 
     @Override
