@@ -167,8 +167,13 @@ public class EWrapperImpl implements EWrapper {
         if(size == -1){
             return;
         }
-        String key = keyUtil.getKeyWithPrefix(String.format("tick_%s_v3",sd.getContract().getSymbolId()));
-        if(sd.getContract().getSecType().equals("IND")){
+        ContractVO contractVO = sd.getContract();
+        String key = keyUtil.getKeyWithPrefix(String.format("tick_%s_v3", contractVO.getSymbolId()));
+        if(contractVO.getSecType().equals("IND")){
+            return;
+        }
+        // 在合规的时间，才更新redis
+        if(!CommonUtil.isValidTime(contractVO)){
             return;
         }
         if (field == 0){
