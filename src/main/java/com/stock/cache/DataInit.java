@@ -34,6 +34,7 @@ public class DataInit {
         if((System.currentTimeMillis() - lastLoadTime)/1000 >= 3600){
             readRedis();
             lastLoadTime = System.currentTimeMillis();
+            log.info("reloadRedis");
         }
     }
 
