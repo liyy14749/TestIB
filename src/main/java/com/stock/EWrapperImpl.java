@@ -139,6 +139,8 @@ public class EWrapperImpl implements EWrapper {
         if(!CommonUtil.isValidTime(contractVO)){
             return;
         }
+        log.info("contractVO -- " + contractVO);
+
         if (tickType == 48 && StringUtils.isNotBlank(value)) {
             String[] ss = value.split(";");
             if(!StringUtils.isBlank(ss[0])){
@@ -177,6 +179,8 @@ public class EWrapperImpl implements EWrapper {
         if(!CommonUtil.isValidTime(contractVO)){
             return;
         }
+        log.info("contractVO -- " + contractVO);
+
         if (field == 0){
             redisUtil.hashPut(key,"ask_size",size);
         } else if (field == 3) {
