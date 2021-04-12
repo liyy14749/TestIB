@@ -60,7 +60,7 @@ public class SocketTask {
 				redisUtil.hashPut(key,"symbol",vo.getSymbol());
 				DataCache.symbolCache.put(vo.getSymbolId(), symbolData);
 				subscribeTickData(wrapper.getClient(), vo);
-				subscribeMarketDepth(wrapper.getClient(), vo);
+				//subscribeMarketDepth(wrapper.getClient(), vo);
 				realTimeBars(wrapper.getClient(), vo);
 				DataCache.lastDataTime.get(DataCache.klineType).setStartTime(System.currentTimeMillis());
 			}
