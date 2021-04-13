@@ -13,17 +13,18 @@ import com.stock.core.util.RedisUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 @Component
 public class DealMsgThread {
     private static Logger log = LoggerFactory.getLogger(DealMsgThread.class);
-    
-    private static int queue_num = 15;
-    private static BlockingQueue<MsgTask>[] taskQueues;
+    @Value("${my.queueNum}")
+    private Integer queueNum;
+    private BlockingQueue<MsgTask>[] taskQueues;
     // 工作线程
-    private static WorkThread[] workThreads;
+    private WorkThread[] workThreads;
 
     @Autowired
     private RedisTemplate<String, String> template;
@@ -31,9 +32,9 @@ public class DealMsgThread {
 
 	@PostConstruct
     public void init() throws Exception {
-        taskQueues = new BlockingQueue[queue_num];
-    	workThreads = new WorkThread[queue_num];
-        for(int j=0;j<queue_num;j++){
+        taskQueues = new BlockingQueue[queueNum];
+    	workThreads = new WorkThread[queueNum];
+        for(int j = 0; j< queueNum; j++){
         	taskQueues[j] = new LinkedBlockingDeque<>();
         	workThreads[j] = new WorkThread(taskQueues[j]);
         	workThreads[j].setName("DealMsgThread-"+j);
@@ -44,7 +45,7 @@ public class DealMsgThread {
     public void putTask(MsgTask task){
     	try {
     		//任务hash存放到 队列中
-    		BlockingQueue<MsgTask> queue=taskQueues[task.getSymbolId().hashCode()%queue_num];
+    		BlockingQueue<MsgTask> queue=taskQueues[task.getSymbolId().hashCode()% queueNum];
     		queue.put(task);
     		int size=queue.size();
     		if(size>10 && (System.currentTimeMillis()-lastLogTime)/1000>3){

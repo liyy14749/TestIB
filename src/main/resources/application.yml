@@ -1,3 +1,5 @@
+my:
+  queueNum: 15
 spring:
   profiles:
     active: dev
