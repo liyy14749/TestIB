@@ -1,5 +1,6 @@
 package com.stock.core.util;
 
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,10 @@ public class RedisUtil {
 
 	public void hashPut(String key,String field,Object value){
 		template.opsForHash().put(key,field,String.valueOf(value));
+	}
+
+	public void hashPutAll(String key, Map<String,String> map){
+		template.opsForHash().putAll(key, map);
 	}
 
 	public String hashGet(String key,String field){

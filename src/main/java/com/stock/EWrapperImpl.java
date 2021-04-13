@@ -8,6 +8,10 @@ import com.alibaba.fastjson.JSON;
 import com.ib.client.*;
 import com.stock.cache.DataCache;
 import com.stock.core.util.RedisUtil;
+import com.stock.thread.DealMsgThread;
+import com.stock.thread.ZSetTask;
+import com.stock.thread.TickField4Task;
+import com.stock.thread.TickTask;
 import com.stock.utils.CommonUtil;
 import com.stock.utils.KeyUtil;
 import com.stock.vo.ContractVO;
@@ -24,7 +28,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.List;
@@ -43,6 +46,7 @@ public class EWrapperImpl implements EWrapper {
     private KeyUtil keyUtil;
     @Value("${spring.profiles.active}")
     private String env;
+    @Autowired private DealMsgThread dealMsgThread;
 
     private EReaderSignal readerSignal;
     private EClientSocket clientSocket;
@@ -81,7 +85,8 @@ public class EWrapperImpl implements EWrapper {
             return;
         }
         ContractVO contractVO = sd.getContract();
-        String key = keyUtil.getKeyWithPrefix(String.format("tick_%s_v3", contractVO.getSymbolId()));
+        Integer symbolId = contractVO.getSymbolId();
+        String key = keyUtil.getKeyWithPrefix(String.format("tick_%s_v3", symbolId));
 
         // 在合规的时间，才更新redis
         if(!CommonUtil.isValidTime(contractVO)){
@@ -92,32 +97,26 @@ public class EWrapperImpl implements EWrapper {
             if(contractVO.getSecType().equals("IND")){
                 return;
             }
-            redisUtil.hashPut(key,"bid",price);
+            dealMsgThread.putTask(new TickTask(key, symbolId,"bid", price));
         } else if (field == 2) {
             if(contractVO.getSecType().equals("IND")){
                 return;
             }
-            redisUtil.hashPut(key,"ask",price);
+            dealMsgThread.putTask(new TickTask(key, symbolId,"ask", price));
         } else if (field == 4) {
-            redisUtil.hashPut(key,"last",price);
-            redisUtil.hashPut(key,"close",price);
-            String lastClose = redisUtil.hashGet(key,"last_close");
-            if(lastClose!=null){
-                BigDecimal price_change = new BigDecimal(String.valueOf(price)).subtract(new BigDecimal(lastClose));
-                redisUtil.hashPut(key,"price_change", price_change);
-                BigDecimal percent = price_change.divide(new BigDecimal(lastClose) ,5 ,BigDecimal.ROUND_FLOOR);
-                redisUtil.hashPut(key,"price_change_percent", percent);
-            }
+            dealMsgThread.putTask(new TickField4Task(key, symbolId, price));
         } else if (field == 6) {
-            redisUtil.hashPut(key,"high",price);
+            dealMsgThread.putTask(new TickTask(key, symbolId,"high", price));
         } else if (field == 7) {
-            redisUtil.hashPut(key,"low",price);
+            dealMsgThread.putTask(new TickTask(key, symbolId,"low", price));
         } else if (field == 9) {
-            redisUtil.hashPut(key,"close",price);
-            redisUtil.hashPut(key,"close_at",DateUtil.format(new Date(),"yyyy-MM-dd HH:mm:ss"));
+            dealMsgThread.putTask(new TickTask(key, symbolId,new String[]{"close","close_at"},
+                    new Object[]{price,DateUtil.format(new Date(),"yyyy-MM-dd HH:mm:ss")}));
+        } else {
+            return;
         }
-        redisUtil.hashPut(key,"time",System.currentTimeMillis()/1000);
-        redisUtil.hashPut(key,"date",DateUtil.format(new Date(),"yyyy-MM-dd HH:mm:ss"));
+        dealMsgThread.putTask(new TickTask(key, symbolId,new String[]{"time","date"},
+                new Object[]{System.currentTimeMillis()/1000,DateUtil.format(new Date(),"yyyy-MM-dd HH:mm:ss")}));
     }
 
     @Override
@@ -149,7 +148,9 @@ public class EWrapperImpl implements EWrapper {
                 deal.setTime(time);
                 deal.setDate(DateUtil.format(new Date(),"yyyy-MM-dd HH:mm:ss"));
                 deal.setMaker(Boolean.parseBoolean(ss[5]));
-                template.opsForZSet().add(keyUtil.getKeyWithPrefix(String.format("order_%s",symbolId)), JSON.toJSONString(deal), time);
+                String key = keyUtil.getKeyWithPrefix(String.format("order_%s",symbolId));
+//                template.opsForZSet().add(key, JSON.toJSONString(deal), time);
+                dealMsgThread.putTask(new ZSetTask(key, symbolId, deal, time));
             }
         }
     }
@@ -169,7 +170,8 @@ public class EWrapperImpl implements EWrapper {
             return;
         }
         ContractVO contractVO = sd.getContract();
-        String key = keyUtil.getKeyWithPrefix(String.format("tick_%s_v3", contractVO.getSymbolId()));
+        Integer symbolId = contractVO.getSymbolId();
+        String key = keyUtil.getKeyWithPrefix(String.format("tick_%s_v3", symbolId));
         if(contractVO.getSecType().equals("IND")){
             return;
         }
@@ -179,12 +181,14 @@ public class EWrapperImpl implements EWrapper {
         }
 
         if (field == 0){
-            redisUtil.hashPut(key,"ask_size",size);
+            dealMsgThread.putTask(new TickTask(key, symbolId,"ask_size", size));
         } else if (field == 3) {
-            redisUtil.hashPut(key,"bid_size",size);
+            dealMsgThread.putTask(new TickTask(key, symbolId,"bid_size", size));
+        } else {
+            return;
         }
-        redisUtil.hashPut(key,"time",System.currentTimeMillis()/1000);
-        redisUtil.hashPut(key,"date",DateUtil.format(new Date(),"yyyy-MM-dd HH:mm:ss"));
+        dealMsgThread.putTask(new TickTask(key, symbolId,new String[]{"time","date"},
+                new Object[]{System.currentTimeMillis()/1000,DateUtil.format(new Date(),"yyyy-MM-dd HH:mm:ss")}));
     }
 
     @Override
@@ -252,7 +256,8 @@ public class EWrapperImpl implements EWrapper {
         if (ticker == null) {
             return;
         }
-        SymbolData sd = DataCache.symbolCache.get(ticker.getContract().getSymbolId());
+        Integer symbolId = ticker.getContract().getSymbolId();
+        SymbolData sd = DataCache.symbolCache.get(symbolId);
         if(sd == null){
             return;
         }
@@ -265,13 +270,15 @@ public class EWrapperImpl implements EWrapper {
         rd.setTime(time);
         rd.setDate(DateUtil.format(new Date(),"yyyy-MM-dd HH:mm:ss"));
         rd.setSymbol(ticker.getContract().getSymbol());
-        String sb = keyUtil.getKeyWithPrefix(String.format("kline_%s_5sec",ticker.getContract().getSymbolId()));
-        template.opsForZSet().add(sb, JSON.toJSONString(rd), time);
+        String sb = keyUtil.getKeyWithPrefix(String.format("kline_%s_5sec", symbolId));
+        dealMsgThread.putTask(new ZSetTask(sb, symbolId,rd, time));
 
         if(env.equals("dev")){
             String key = keyUtil.getKeyWithPrefix(String.format("tick_%s_v3",sd.getContract().getSymbolId()));
-            redisUtil.hashPut(key,"last_close",open);
-            redisUtil.hashPut(key,"open",open);
+            //redisUtil.hashPut(key,"last_close",open);
+            dealMsgThread.putTask(new TickTask(key, symbolId,"last_close", open));
+            //redisUtil.hashPut(key,"open",open);
+            dealMsgThread.putTask(new TickTask(key, symbolId,"open", open));
         }
     }
 
