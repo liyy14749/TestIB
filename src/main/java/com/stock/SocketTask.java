@@ -83,8 +83,8 @@ public class SocketTask {
 					}
 				} else {
 					LastData lastData = DataCache.lastDataTime.get(DataCache.klineType);
-					if(lastData.getStartTime()>0 && (System.currentTimeMillis()-lastData.getStartTime())/1000>10){
-						if(DataCache.SERVER_OK && (System.currentTimeMillis()-lastData.getLastTime())/1000>=15){
+					if(lastData.getStartTime()>0 && (System.currentTimeMillis()-lastData.getStartTime())/1000>55){
+						if(DataCache.SERVER_OK && (System.currentTimeMillis()-lastData.getLastTime())/1000>55){
 							if(isTimePeriod()){
 								dataInit.reloadRedis();
 								log.info("kline no data reconnect");
@@ -106,17 +106,17 @@ public class SocketTask {
 		int hour = DateUtil.thisHour(true);
 		int minute = DateUtil.thisMinute();
 		if(hour==9){
-			if(minute>=29 && minute<=31){
+			if(minute==27 || minute==31){
 				flag = true;
 			}
-		} else if((hour==13&&minute==0)||(hour==12&&minute==59)||(hour==13&&minute==1)){
+		} else if((hour==12&&minute==57)||(hour==13&&minute==1)){
 			flag = true;
 		} else if(hour==21){
-			if(minute>=29 && minute<=31){
+			if(minute==27 || minute==31){
 				flag = true;
 			}
 		} else if(hour==22){
-			if(minute>=29 && minute<=31){
+			if(minute==27 || minute==31){
 				flag = true;
 			}
 		}
