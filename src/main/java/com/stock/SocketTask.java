@@ -8,7 +8,6 @@ import com.ib.client.*;
 import com.stock.cache.DataCache;
 import com.stock.cache.DataInit;
 import com.stock.cache.LastData;
-import com.stock.core.util.DateTimeUtil;
 import com.stock.core.util.RedisUtil;
 import com.stock.utils.KeyUtil;
 import com.stock.vo.*;
@@ -80,9 +79,7 @@ public class SocketTask {
 					} catch (InterruptedException e) {
 					}
 					if(DataCache.SERVER_OK){
-						doWork(DataCache.usContracts);
-						doWork(DataCache.hkContracts);
-						doWork(DataCache.indContracts);
+						doWork(DataCache.contracts);
 					}
 				} else {
 					LastData lastData = DataCache.lastDataTime.get(DataCache.klineType);

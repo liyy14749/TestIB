@@ -15,9 +15,9 @@ public class DataCache {
     public static String klineType = "kline";
     public static String tickType = "tick";
 
-    public static List<ContractVO> usContracts;
-    public static List<ContractVO> hkContracts;
-    public static List<ContractVO> indContracts;
+    public static List<ContractVO> contracts = new ArrayList<>();
+//    public static List<ContractVO> hkContracts;
+//    public static List<ContractVO> indContracts;
 
     static {
         lastDataTime.put(klineType,new LastData());

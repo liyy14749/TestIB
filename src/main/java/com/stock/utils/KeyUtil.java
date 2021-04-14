@@ -14,6 +14,8 @@ public class KeyUtil {
             return String.format("test_%s",key);
         } else if(env.equals("pre")){
             return String.format("pre_%s",key);
+        } else if(env.equals("dev")){
+            return String.format("dev_%s",key);
         }
         return key;
     }

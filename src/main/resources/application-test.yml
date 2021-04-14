@@ -11,6 +11,8 @@ my:
       host: 127.0.0.1
       port: 7496
       clientId: 999
+  stock:
+    redisKey: stock_static_symbol_us,stock_static_symbol_ind,stock_static_symbol_hk
 spring:
   redis:
     # Redis数据库索引（默认为0）
