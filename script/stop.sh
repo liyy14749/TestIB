@@ -2,11 +2,17 @@
 
 source ./config.sh $1
 
-# 启动服务
-num=$(ps -ef | grep "${PROJECT_NAME_JAR}" | grep "${ACTIVE}" | grep "${CLIENT_ID}" | grep -v "grep" | wc -l)
-if [ $num -gt 0 ]; then
-  ps -ef | grep "${PROJECT_NAME_JAR}" | grep "${ACTIVE}" | grep "${CLIENT_ID}" | grep -v "grep" | awk '{print $2}' | xargs kill -9
-  echo "[${CUR_TIME}]-${PROJECT_NAME_JAR}: to stop." >> "${PROJECT_CONSOLE_LOG_PATH}/${ACTIVE}.${PROJECT_NAME}.log"
-else
-  echo "[${CUR_TIME}]-${PROJECT_NAME_JAR}: not running." >> "${PROJECT_CONSOLE_LOG_PATH}/${ACTIVE}.${PROJECT_NAME}.log"
-fi
+# 关闭服务
+for item in ${CONFIG[@]}; do
+  active=`echo ${item} | awk -F ':' '{print $1}'`
+  client_host=`echo ${item} | awk -F ':' '{print $2}'`
+  client_id=`echo ${item} | awk -F ':' '{print $4}'`
+
+  num=$(ps -ef | grep "${PROJECT_NAME_JAR}" | grep "${active}" | grep "${client_id}" | grep -v "grep" | wc -l)
+  if [ $num -gt 0 ]; then
+    ps -ef | grep "${PROJECT_NAME_JAR}" | grep "${client_id}" | grep "${client_id}" | grep -v "grep" | awk '{print $2}' | xargs kill -9
+    echo "[${CUR_TIME}]-${PROJECT_NAME_JAR}: to stop." >>"${PROJECT_CONSOLE_LOG_PATH}/${client_host}.${client_id}.${PROJECT_NAME}.log"
+  else
+    echo "[${CUR_TIME}]-${PROJECT_NAME_JAR}: not running." >>"${PROJECT_CONSOLE_LOG_PATH}/${client_host}.${client_id}.${PROJECT_NAME}.log"
+  fi
+done
