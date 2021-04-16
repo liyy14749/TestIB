@@ -30,11 +30,11 @@ server_config=("127.0.0.1:7496")
 if [ "$1" == "-prod" ]; then
   active="prod"
   client_id="70001"
-  server_config=("10.0.2.27:7496")
+  server_config=("10.0.2.27:4002")
 elif [ "$1" == "-pre" ]; then
   active="pre"
   client_id="10001"
-  server_config=("10.0.2.27:7496")
+  server_config=("10.0.2.27:4002")
 elif [ "$1" == "-test" ]; then
   client_id="70001"
   active="test"
