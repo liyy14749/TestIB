@@ -450,7 +450,13 @@ public class EWrapperImpl implements EWrapper {
 
     @Override
     public void marketDataType(int reqId, int marketDataType) {
-		log.debug("MarketDataType. ["+reqId+"], Type: ["+marketDataType+"]\n");
+        TickerVO ticker = DataCache.tickerCache.get(reqId);
+        if (ticker == null) {
+            log.debug("MarketDataType. ["+reqId+"], Type: ["+marketDataType+"]\n");
+            return;
+        }
+        Integer symbolId = ticker.getContract().getSymbolId();
+        log.debug("symbolId "+ symbolId + ",MarketDataType. ["+reqId+"], Type: ["+marketDataType+"]\n");
     }
 
     @Override
@@ -522,7 +528,13 @@ public class EWrapperImpl implements EWrapper {
 
     @Override
     public void error(int id, int errorCode, String errorMsg) {
-        log.error("Error. Id: " + id + ", Code: " + errorCode + ", Msg: " + errorMsg + "\n");
+        TickerVO ticker = DataCache.tickerCache.get(id);
+        if (ticker != null) {
+            Integer symbolId = ticker.getContract().getSymbolId();
+            log.error("symbolId "+ symbolId + ",Error. Id: " + id + ", Code: " + errorCode + ", Msg: " + errorMsg + "\n");
+        } else {
+            log.error("Error. Id: " + id + ", Code: " + errorCode + ", Msg: " + errorMsg + "\n");
+        }
         if(id == -1 && (errorCode ==2104|| errorCode ==2106|| errorCode==2158)){
             DataCache.SERVER_OK = true;
         } else if(id == -1 && (errorCode == 1300 || errorCode == 504 || errorCode == 507 || errorCode == 502 || errorCode == 1101)){
@@ -637,7 +649,13 @@ public class EWrapperImpl implements EWrapper {
 
     @Override
     public void tickReqParams(int tickerId, double minTick, String bboExchange, int snapshotPermissions) {
-        log.debug("Tick req params. Ticker Id:" + tickerId + ", Min tick: " + minTick + ", bbo exchange: " + bboExchange + ", Snapshot permissions: " + snapshotPermissions);
+        TickerVO ticker = DataCache.tickerCache.get(tickerId);
+        if (ticker == null) {
+            log.debug("Tick req params. Ticker Id:" + tickerId + ", Min tick: " + minTick + ", bbo exchange: " + bboExchange + ", Snapshot permissions: " + snapshotPermissions);
+            return;
+        }
+        Integer symbolId = ticker.getContract().getSymbolId();
+        log.debug("symbolId "+ symbolId + ",Tick req params. Ticker Id:" + tickerId + ", Min tick: " + minTick + ", bbo exchange: " + bboExchange + ", Snapshot permissions: " + snapshotPermissions);
     }
 
     @Override
