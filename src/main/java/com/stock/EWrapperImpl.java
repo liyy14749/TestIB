@@ -71,8 +71,6 @@ public class EWrapperImpl implements EWrapper {
 
     @Override
     public void tickPrice(int tickerId, int field, double price, TickAttrib attribs) {
-        log.debug("tick Price. Ticker Id:" + tickerId + ", Field: " + field + ", Price: " + price + ", CanAutoExecute: " + attribs.canAutoExecute()
-                + ", pastLimit: " + attribs.pastLimit() + ", pre-open: " + attribs.preOpen());
         TickerVO ticker = DataCache.tickerCache.get(tickerId);
         if (ticker == null) {
             return;
@@ -86,6 +84,8 @@ public class EWrapperImpl implements EWrapper {
         }
         ContractVO contractVO = sd.getContract();
         Integer symbolId = contractVO.getSymbolId();
+        log.debug("symbolId "+ symbolId + ",tick Price. Ticker Id:" + tickerId + ", Field: " + field + ", Price: " + price + ", CanAutoExecute: " + attribs.canAutoExecute()
+                + ", pastLimit: " + attribs.pastLimit() + ", pre-open: " + attribs.preOpen());
         String key = keyUtil.getKeyWithPrefix(String.format("tick_%s_v3", symbolId));
 
         // 在合规的时间，才更新redis
@@ -121,13 +121,13 @@ public class EWrapperImpl implements EWrapper {
 
     @Override
     public void tickString(int tickerId, int tickType, String value) {
-        log.debug("tick string. Ticker Id:" + tickerId + ", Type: " + tickType + ", Value: " + value);
         TickerVO ticker = DataCache.tickerCache.get(tickerId);
         if (ticker == null) {
             return;
         }
         ContractVO contractVO = ticker.getContract();
         Integer symbolId = contractVO.getSymbolId();
+        log.debug("symbolId "+ symbolId + ",tick string. Ticker Id:" + tickerId + ", Type: " + tickType + ", Value: " + value);
         SymbolData sd = DataCache.symbolCache.get(symbolId);
         MktData mktData = sd.getMktData();
         if (sd == null || mktData == null) {
@@ -157,7 +157,6 @@ public class EWrapperImpl implements EWrapper {
 
     @Override
     public void tickSize(int tickerId, int field, int size) {
-        log.debug("tick Size. Ticker Id:" + tickerId + ", Field: " + field + ", Size: " + size);
         TickerVO ticker = DataCache.tickerCache.get(tickerId);
         if (ticker == null) {
             return;
@@ -171,6 +170,7 @@ public class EWrapperImpl implements EWrapper {
         }
         ContractVO contractVO = sd.getContract();
         Integer symbolId = contractVO.getSymbolId();
+        log.debug("symbolId "+ symbolId + ",tick Size. Ticker Id:" + tickerId + ", Field: " + field + ", Size: " + size);
         String key = keyUtil.getKeyWithPrefix(String.format("tick_%s_v3", symbolId));
         if(contractVO.getSecType().equals("IND")){
             return;
