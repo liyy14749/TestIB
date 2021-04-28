@@ -44,15 +44,23 @@ echo "active: ${active}"
 echo "client_id: ${client_id}"
 echo "server_config: ${#server_config[@]}"
 
+region="us"
+time_second=$(date "+%H%M%S")
+result=$(echo "$time_second > 90000 && $time_second < 161000" | bc)
+echo "result: ${result}"
+if [ $result -gt 0 ]; then
+  region="hk"
+fi
+
 # 启动分组
 group_num=3 # 当前股票分组数量
 tmp_client_id=client_id
 for ((i = 0; i < group_num; i++)); do
   tmp_client_id=$((client_id + i))
-  CONFIG[$i]="${tmp_client_id}:stock_static_symbol_us_${i},stock_static_symbol_hk_${i}"
+  CONFIG[$i]="${tmp_client_id}:stock_static_symbol_${region}_${i}"
 done
 tmp_client_id=$((client_id + i))
-CONFIG[$i]="${tmp_client_id}:stock_static_symbol_ind"
+CONFIG[$i]="${tmp_client_id}:stock_static_symbol_ind_${region}"
 
 
 server_config_len=${#server_config[@]}
