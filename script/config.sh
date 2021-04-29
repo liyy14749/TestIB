@@ -46,7 +46,7 @@ echo "server_config: ${#server_config[@]}"
 
 region="us"
 time_second=$(date "+%H%M%S")
-result=$(echo "$time_second > 90000 && $time_second < 161000" | bc)
+result=$(echo "$time_second > 83000 && $time_second < 161000" | bc)
 echo "result: ${result}"
 if [ $result -gt 0 ]; then
   region="hk"
